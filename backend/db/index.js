@@ -34,3 +34,18 @@ const closeDB = async () => {
 };
 
 module.exports = { client, connectDB, closeDB };
+
+// Test connection if run directly
+if (require.main === module) {
+  (async () => {
+    try {
+      await connectDB();
+      console.log('Database connection test successful!');
+      await closeDB();
+      process.exit(0);
+    } catch (error) {
+      console.error('Database connection test failed:', error.message);
+      process.exit(1);
+    }
+  })();
+}
