@@ -5,6 +5,7 @@ require('dotenv').config();
 const express = require('express');
 const db = require('./db'); 
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +14,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 // Định tuyến API cho Authentication - Mọi request tới /api/auth/... sẽ được xử lý bởi authRoutes
-app.use('/api/auth', authRoutes); 
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+
 
 // Khởi động Server + kết nối DB
 const startServer = async () => {
