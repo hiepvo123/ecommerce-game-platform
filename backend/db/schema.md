@@ -190,8 +190,27 @@ User accounts.
 | username | varchar | UNIQUE, NOT NULL | Username |
 | password_hash | varchar | NOT NULL | Hashed password |
 | role | user_role | NOT NULL, DEFAULT 'user' | User role (user/admin) |
+| is_verified | boolean | NOT NULL, DEFAULT false | Email verification status |
 | date_of_birth | date | | Date of birth |
 | country | varchar | | Country |
+
+#### user_verifications
+Email/SMS verification tokens for newly registered users.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | bigserial | PRIMARY KEY | Verification record ID |
+| user_id | bigint | NOT NULL, FK → users | User ID |
+| otp_hash | varchar | NOT NULL | Hashed OTP code (never store plain text) |
+| delivery_method | varchar | NOT NULL, DEFAULT 'email' | Channel used to deliver OTP (email, sms, etc.) |
+| expires_at | timestamp | NOT NULL | Expiration timestamp for this OTP |
+| verified_at | timestamp | | Timestamp when OTP was successfully verified |
+| attempt_count | smallint | NOT NULL, DEFAULT 0 | Number of verification attempts |
+| created_at | timestamp | NOT NULL, DEFAULT (now()) | Timestamp when OTP was generated |
+
+**Indexes:**
+- Unique index on `(user_id)` to keep only one active OTP per user
+- Index on `expires_at` for quick cleanup of expired OTPs
 
 #### session
 Session storage for authenticated users (server-side session store).

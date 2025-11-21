@@ -12,6 +12,7 @@ const genresQueries = require('./genres');
 const reviewsQueries = require('./reviews');
 const libraryQueries = require('./library');
 const couponsQueries = require('./coupons');
+const userVerificationQueries = require('./userVerification');
 
 module.exports = {
   games: gamesQueries,
@@ -23,5 +24,6 @@ module.exports = {
   reviews: reviewsQueries,
   library: libraryQueries,
   coupons: couponsQueries,
+  userVerification: userVerificationQueries,
 };
 

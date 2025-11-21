@@ -12,7 +12,7 @@ const usersQueries = {
    * @returns {Promise<Object|null>} User object or null
    */
   getUserById: async (userId) => {
-    const queryText = 'SELECT id, email, username, role, date_of_birth, country, created_at FROM users WHERE id = $1';
+    const queryText = 'SELECT id, email, username, role, is_verified, date_of_birth, country, created_at FROM users WHERE id = $1';
     return await queryOne(queryText, [userId]);
   },
 
@@ -67,13 +67,13 @@ const usersQueries = {
    * @returns {Promise<Object>} Created user
    */
   createUser: async (userData) => {
-    const { email, username, password_hash, role = 'user', date_of_birth, country } = userData;
+    const { email, username, password_hash, role = 'user', is_verified = false, date_of_birth, country } = userData;
     const queryText = `
-      INSERT INTO users (email, username, password_hash, role, date_of_birth, country)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, email, username, role, date_of_birth, country
+      INSERT INTO users (email, username, password_hash, role, is_verified, date_of_birth, country)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, email, username, role, is_verified, date_of_birth, country
     `;
-    return await queryOne(queryText, [email, username, password_hash, role, date_of_birth, country]);
+    return await queryOne(queryText, [email, username, password_hash, role, is_verified, date_of_birth, country]);
   },
 
   /**
@@ -87,7 +87,7 @@ const usersQueries = {
     const values = [];
     let paramIndex = 1;
 
-    const allowedFields = ['email', 'username', 'password_hash', 'role', 'date_of_birth', 'country'];
+    const allowedFields = ['email', 'username', 'password_hash', 'role', 'is_verified', 'date_of_birth', 'country'];
     for (const [key, value] of Object.entries(userData)) {
       if (allowedFields.includes(key) && value !== undefined) {
         fields.push(`${key} = $${paramIndex}`);
@@ -105,9 +105,24 @@ const usersQueries = {
       UPDATE users
       SET ${fields.join(', ')}
       WHERE id = $${paramIndex}
-      RETURNING id, email, username, role, date_of_birth, country
+      RETURNING id, email, username, role, is_verified, date_of_birth, country
     `;
     return await queryOne(queryText, values);
+  },
+
+  /**
+   * Mark user as verified
+   * @param {number} userId
+   * @returns {Promise<Object|null>}
+   */
+  markUserVerified: async (userId) => {
+    const queryText = `
+      UPDATE users
+      SET is_verified = true
+      WHERE id = $1
+      RETURNING id, email, username, role, is_verified
+    `;
+    return await queryOne(queryText, [userId]);
   },
 
   /**

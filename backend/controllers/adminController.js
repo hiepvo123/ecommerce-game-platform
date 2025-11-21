@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const queries = require('../db/helpers/queries');
-const jwtService = require('../services/jwtService');
 
 module.exports = {
   login: async (req, res) => {
@@ -29,8 +28,6 @@ module.exports = {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      // Tạo token JWT
-      const token = jwtService.generateToken(user);
 
       res.json({
         message: "Admin login successful",
