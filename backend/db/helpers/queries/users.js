@@ -136,6 +136,17 @@ const usersQueries = {
   },
 
   /**
+   * Get billing address by ID
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @returns {Promise<Object|null>} Address object or null
+   */
+  getBillingAddressById: async (addressId, userId) => {
+    const queryText = 'SELECT * FROM user_billing_addresses WHERE id = $1 AND user_id = $2';
+    return await queryOne(queryText, [addressId, userId]);
+  },
+
+  /**
    * Create billing address
    * @param {Object} addressData - Address data
    * @returns {Promise<Object>} Created address
@@ -148,6 +159,36 @@ const usersQueries = {
       RETURNING *
     `;
     return await queryOne(queryText, [user_id, full_name, line1, line2, city, state, postal_code, country]);
+  },
+
+  /**
+   * Update billing address
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @param {Object} addressData - Address data to update
+   * @returns {Promise<Object|null>} Updated address or null
+   */
+  updateBillingAddress: async (addressId, userId, addressData) => {
+    const { full_name, line1, line2, city, state, postal_code, country } = addressData;
+    const queryText = `
+      UPDATE user_billing_addresses
+      SET full_name = $1, line1 = $2, line2 = $3, city = $4, state = $5, postal_code = $6, country = $7
+      WHERE id = $8 AND user_id = $9
+      RETURNING *
+    `;
+    return await queryOne(queryText, [full_name, line1, line2, city, state, postal_code, country, addressId, userId]);
+  },
+
+  /**
+   * Delete billing address
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @returns {Promise<boolean>} Success status
+   */
+  deleteBillingAddress: async (addressId, userId) => {
+    const queryText = 'DELETE FROM user_billing_addresses WHERE id = $1 AND user_id = $2 RETURNING id';
+    const result = await queryOne(queryText, [addressId, userId]);
+    return result !== null;
   },
 
   /**

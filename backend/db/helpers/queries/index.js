@@ -9,6 +9,7 @@ const cartsQueries = require('./carts');
 const ordersQueries = require('./orders');
 const categoriesQueries = require('./categories');
 const genresQueries = require('./genres');
+const languagesQueries = require('./languages');
 const reviewsQueries = require('./reviews');
 const libraryQueries = require('./library');
 const couponsQueries = require('./coupons');
@@ -21,6 +22,7 @@ module.exports = {
   orders: ordersQueries,
   categories: categoriesQueries,
   genres: genresQueries,
+  languages: languagesQueries,
   reviews: reviewsQueries,
   library: libraryQueries,
   coupons: couponsQueries,
