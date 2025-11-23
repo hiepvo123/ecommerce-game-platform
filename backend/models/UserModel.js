@@ -1,5 +1,6 @@
 // backend/models/UserModel.js
 const db = require('../db'); // Nhập module db/index.js
+const { query, queryOne } = require('../db/helpers/queryUtils');
 // const bcrypt = require('bcrypt'); // Cần thư viện này để so sánh mật khẩu băm
 
 // Tương ứng với UserModel -> Database trong Sequence Diagram
@@ -34,4 +35,57 @@ exports.checkUserCredentials = async (username, password) => {
         console.error("Invalid user's infomation:", error);
         throw error;
     }
+};
+
+module.exports = {
+  getAllUsers: async () => {
+    return await query(`
+      SELECT id, email, username, role, date_of_birth, country 
+      FROM users
+      ORDER BY id ASC
+    `);
+  },
+
+  getUserById: async (userId) => {
+    return await queryOne(
+      `SELECT id, email, username, role, date_of_birth, country 
+       FROM users WHERE id = $1`,
+      [userId]
+    );
+  },
+
+  updateUser: async (userId, data) => {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    const allowed = ["email", "username", "role", "date_of_birth", "country"];
+
+    for (const [key, value] of Object.entries(data)) {
+      if (allowed.includes(key)) {
+        fields.push(`${key} = $${idx}`);
+        values.push(value);
+        idx++;
+      }
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(userId);
+
+    return await queryOne(
+      `
+      UPDATE users 
+      SET ${fields.join(", ")}
+      WHERE id = $${idx}
+      RETURNING id, email, username, role, date_of_birth, country
+      `,
+      values
+    );
+  },
+
+  deleteUser: async (userId) => {
+    await query(`DELETE FROM users WHERE id = $1`, [userId]);
+    return true;
+  }
 };
