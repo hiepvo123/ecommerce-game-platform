@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
 const referenceRoutes = require('./routes/referenceRoutes');
+const gameRoutes = require('./routes/gameRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/reference', referenceRoutes);
+app.use('/api/games', gameRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

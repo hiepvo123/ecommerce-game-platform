@@ -257,6 +257,177 @@ const gamesQueries = {
 
     return await query(queryText);
   },
+
+  /**
+   * Get recommended games based on user preferences
+   * @param {number} userId - User ID
+   * @param {Object} options - Query options (limit, offset, minMatches, sortBy, order)
+   * @returns {Promise<Array>} Array of recommended games
+   */
+  getRecommendedGames: async (userId, options = {}) => {
+    const { limit = 20, offset = 0, minMatches = 15, sortBy = 'recommendations_total', order = 'DESC' } = options;
+    
+    // First, get user preferences
+    const profileQuery = 'SELECT prefer_lang_ids, prefer_genre_ids, prefer_cate_ids, prefer_platforms FROM user_profiles WHERE user_id = $1';
+    const profile = await queryOne(profileQuery, [userId]);
+    
+    // If no profile exists, return top games
+    if (!profile) {
+      const orderClause = buildOrderClause(`g.${sortBy}`, order);
+      const queryText = `
+        SELECT g.*
+        FROM games g
+        ${orderClause}
+        LIMIT $1 OFFSET $2
+      `;
+      return await query(queryText, [limit, offset]);
+    }
+    
+    // Build matching conditions
+    const conditions = [];
+    const params = [];
+    let paramIndex = 1;
+    
+    // Match languages
+    if (profile.prefer_lang_ids && profile.prefer_lang_ids.length > 0) {
+      conditions.push(`EXISTS (
+        SELECT 1 FROM game_languages gl 
+        WHERE gl.app_id = g.app_id 
+        AND gl.language_id = ANY($${paramIndex})
+      )`);
+      params.push(profile.prefer_lang_ids);
+      paramIndex++;
+    }
+    
+    // Match genres
+    if (profile.prefer_genre_ids && profile.prefer_genre_ids.length > 0) {
+      conditions.push(`EXISTS (
+        SELECT 1 FROM game_genres gg 
+        WHERE gg.app_id = g.app_id 
+        AND gg.genre_id = ANY($${paramIndex})
+      )`);
+      params.push(profile.prefer_genre_ids);
+      paramIndex++;
+    }
+    
+    // Match categories
+    if (profile.prefer_cate_ids && profile.prefer_cate_ids.length > 0) {
+      conditions.push(`EXISTS (
+        SELECT 1 FROM game_categories gc 
+        WHERE gc.app_id = g.app_id 
+        AND gc.category_id = ANY($${paramIndex})
+      )`);
+      params.push(profile.prefer_cate_ids);
+      paramIndex++;
+    }
+    
+    // Match platforms
+    if (profile.prefer_platforms && profile.prefer_platforms.length > 0) {
+      const platformConditions = [];
+      profile.prefer_platforms.forEach(platform => {
+        if (platform === 'windows') {
+          platformConditions.push('g.platforms_windows = true');
+        } else if (platform === 'mac') {
+          platformConditions.push('g.platforms_mac = true');
+        } else if (platform === 'linux') {
+          platformConditions.push('g.platforms_linux = true');
+        }
+      });
+      if (platformConditions.length > 0) {
+        conditions.push(`(${platformConditions.join(' OR ')})`);
+      }
+    }
+    
+    // If no preferences set, return top games
+    if (conditions.length === 0) {
+      const orderClause = buildOrderClause(`g.${sortBy}`, order);
+      const queryText = `
+        SELECT g.*
+        FROM games g
+        ${orderClause}
+        LIMIT $1 OFFSET $2
+      `;
+      return await query(queryText, [limit, offset]);
+    }
+    
+    // Build the query with preferences
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+    const orderClause = buildOrderClause(`g.${sortBy}`, order);
+    
+    let queryText = `
+      SELECT g.*, 
+             COUNT(*) OVER() as total_matches
+      FROM games g
+      ${whereClause}
+      ${orderClause}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+    params.push(limit, offset);
+    
+    // Execute query and check if we have enough matches
+    const matchedGames = await query(queryText, params);
+    
+    // If we have fewer matches than minMatches, supplement with top games
+    if (matchedGames.length < minMatches && matchedGames.length < limit) {
+      const needed = Math.min(minMatches - matchedGames.length, limit - matchedGames.length);
+      
+      // Get top games by recommendations that aren't already in results
+      const matchedAppIds = matchedGames.map(g => g.app_id);
+      let supplementQuery;
+      let supplementParams;
+      
+      if (matchedAppIds.length > 0) {
+        // Use parameterized query for safety
+        const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
+        supplementQuery = `
+          SELECT g.*
+          FROM games g
+          WHERE g.app_id NOT IN (${matchedAppIds.map((_, i) => `$${i + 1}`).join(',')})
+          ${supplementOrderClause}
+          LIMIT $${matchedAppIds.length + 1}
+        `;
+        supplementParams = [...matchedAppIds, needed];
+      } else {
+        const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
+        supplementQuery = `
+          SELECT g.*
+          FROM games g
+          ${supplementOrderClause}
+          LIMIT $1
+        `;
+        supplementParams = [needed];
+      }
+      
+      const supplementGames = await query(supplementQuery, supplementParams);
+      
+      // Combine and re-sort the combined results to maintain sort order
+      const combinedGames = [...matchedGames, ...supplementGames];
+      
+      // Sort the combined array based on sortBy and order
+      combinedGames.sort((a, b) => {
+        let aVal = a[sortBy];
+        let bVal = b[sortBy];
+        
+        // Handle null/undefined values
+        if (aVal == null) aVal = order === 'ASC' ? Infinity : -Infinity;
+        if (bVal == null) bVal = order === 'ASC' ? Infinity : -Infinity;
+        
+        // Convert to numbers if needed
+        if (typeof aVal === 'string' && !isNaN(aVal)) aVal = parseFloat(aVal);
+        if (typeof bVal === 'string' && !isNaN(bVal)) bVal = parseFloat(bVal);
+        
+        if (order === 'ASC') {
+          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+        } else {
+          return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+        }
+      });
+      
+      return combinedGames.slice(0, limit);
+    }
+    
+    return matchedGames;
+  },
 };
 
 module.exports = gamesQueries;
