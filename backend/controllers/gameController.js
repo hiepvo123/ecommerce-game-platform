@@ -146,7 +146,8 @@ const getGameById = async (req, res) => {
  */
 const searchGames = async (req, res) => {
   try {
-    const { q, limit = 20, offset = 0, sortBy = 'recommendations_total', order = 'DESC' } = req.query;
+    // Default to relevance for search, but allow override
+    const { q, limit = 20, offset = 0, sortBy = 'relevance', order = 'DESC' } = req.query;
 
     if (!q || q.trim() === '') {
       return sendError(res, 'Search query is required', 'VALIDATION_ERROR', 400);
@@ -155,7 +156,7 @@ const searchGames = async (req, res) => {
     const games = await queries.games.searchGames(q.trim(), {
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
-      sortBy,
+      sortBy, // 'relevance' or other field - query handles it
       order: order.toUpperCase()
     });
 

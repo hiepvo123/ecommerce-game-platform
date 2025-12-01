@@ -13,11 +13,13 @@ const gamesQueries = {
    */
   getAllGames: async (options = {}) => {
     const { limit, offset, sortBy = 'name', order = 'ASC' } = options;
-    const orderClause = buildOrderClause(sortBy, order);
+    const orderClause = buildOrderClause(`g.${sortBy}`, order);
     const paginationClause = buildPaginationClause(limit, offset);
     
     const queryText = `
-      SELECT * FROM games
+      SELECT g.*, gd.header_image, gd.background
+      FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
       ${orderClause}
       ${paginationClause}
     `.trim();
@@ -112,11 +114,13 @@ const gamesQueries = {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    const orderClause = buildOrderClause(sortBy, order);
+    const orderClause = buildOrderClause(`g.${sortBy}`, order);
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT * FROM games
+      SELECT g.*, gd.header_image, gd.background
+      FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
       ${whereClause}
       ${orderClause}
       ${paginationClause}
@@ -126,24 +130,50 @@ const gamesQueries = {
   },
 
   /**
-   * Search games by name
+   * Search games using PostgreSQL Full-Text Search
+   * Searches in game name and detailed description
    * @param {string} searchTerm - Search term
    * @param {Object} options - Query options
    * @returns {Promise<Array>} Array of games
    */
   searchGames: async (searchTerm, options = {}) => {
-    const { limit, offset, sortBy = 'name', order = 'ASC' } = options;
-    const orderClause = buildOrderClause(sortBy, order);
+    const { limit, offset, sortBy, order } = options;
     const paginationClause = buildPaginationClause(limit, offset);
 
+    // Convert search term to tsquery for full-text search
+    // plainto_tsquery handles multiple words and removes punctuation
+    const searchQuery = `plainto_tsquery('english', $1)`;
+    
+    // Build search vector from name (weight A - highest) and description (weight B)
+    // Coalesce to handle NULL descriptions
+    const searchVector = `
+      setweight(to_tsvector('english', COALESCE(g.name, '')), 'A') ||
+      setweight(to_tsvector('english', COALESCE(gd.detailed_description, '')), 'B')
+    `;
+
+    // Calculate relevance rank
+    const relevanceRank = `ts_rank(${searchVector}, ${searchQuery})`;
+
+    // Determine ordering: if sortBy is specified and not 'relevance', use it; otherwise use relevance
+    let orderClause;
+    if (sortBy && sortBy !== 'relevance') {
+      // User wants to sort by a specific field (e.g., price, recommendations_total)
+      orderClause = buildOrderClause(`g.${sortBy}`, order || 'ASC');
+    } else {
+      // Default: sort by relevance (highest first), then by name for tie-breaking
+      orderClause = `ORDER BY ${relevanceRank} DESC, g.name ASC`;
+    }
+
     const queryText = `
-      SELECT * FROM games
-      WHERE name ILIKE $1
+      SELECT g.*, gd.header_image, gd.background, ${relevanceRank} as relevance
+      FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      WHERE ${searchVector} @@ ${searchQuery}
       ${orderClause}
       ${paginationClause}
     `.trim();
 
-    return await query(queryText, [`%${searchTerm}%`]);
+    return await query(queryText, [searchTerm]);
   },
 
   /**
@@ -158,9 +188,10 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*
+      SELECT g.*, gd.header_image, gd.background
       FROM games g
       INNER JOIN game_genres gg ON g.app_id = gg.app_id
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
       WHERE gg.genre_id = $1
       ${orderClause}
       ${paginationClause}
@@ -181,9 +212,10 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*
+      SELECT g.*, gd.header_image, gd.background
       FROM games g
       INNER JOIN game_categories gc ON g.app_id = gc.app_id
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
       WHERE gc.category_id = $1
       ${orderClause}
       ${paginationClause}
@@ -245,12 +277,14 @@ const gamesQueries = {
    */
   getDiscountedGames: async (options = {}) => {
     const { limit, offset, sortBy = 'discount_percent', order = 'DESC' } = options;
-    const orderClause = buildOrderClause(sortBy, order);
+    const orderClause = buildOrderClause(`g.${sortBy}`, order);
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT * FROM games
-      WHERE discount_percent > 0
+      SELECT g.*, gd.header_image, gd.background
+      FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      WHERE g.discount_percent > 0
       ${orderClause}
       ${paginationClause}
     `.trim();
@@ -275,8 +309,9 @@ const gamesQueries = {
     if (!profile) {
       const orderClause = buildOrderClause(`g.${sortBy}`, order);
       const queryText = `
-        SELECT g.*
+        SELECT g.*, gd.header_image, gd.background
         FROM games g
+        LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
         ${orderClause}
         LIMIT $1 OFFSET $2
       `;
@@ -342,8 +377,9 @@ const gamesQueries = {
     if (conditions.length === 0) {
       const orderClause = buildOrderClause(`g.${sortBy}`, order);
       const queryText = `
-        SELECT g.*
+        SELECT g.*, gd.header_image, gd.background
         FROM games g
+        LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
         ${orderClause}
         LIMIT $1 OFFSET $2
       `;
@@ -355,9 +391,10 @@ const gamesQueries = {
     const orderClause = buildOrderClause(`g.${sortBy}`, order);
     
     let queryText = `
-      SELECT g.*, 
+      SELECT g.*, gd.header_image, gd.background,
              COUNT(*) OVER() as total_matches
       FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
       ${whereClause}
       ${orderClause}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
@@ -380,8 +417,9 @@ const gamesQueries = {
         // Use parameterized query for safety
         const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
         supplementQuery = `
-          SELECT g.*
+          SELECT g.*, gd.header_image, gd.background
           FROM games g
+          LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
           WHERE g.app_id NOT IN (${matchedAppIds.map((_, i) => `$${i + 1}`).join(',')})
           ${supplementOrderClause}
           LIMIT $${matchedAppIds.length + 1}
@@ -390,8 +428,9 @@ const gamesQueries = {
       } else {
         const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
         supplementQuery = `
-          SELECT g.*
+          SELECT g.*, gd.header_image, gd.background
           FROM games g
+          LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
           ${supplementOrderClause}
           LIMIT $1
         `;

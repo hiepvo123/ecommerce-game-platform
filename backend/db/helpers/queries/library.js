@@ -84,26 +84,29 @@ const libraryQueries = {
    * Get user wishlist
    * @param {number} userId - User ID
    * @param {Object} options - Query options
-   * @returns {Promise<Array>} Array of wishlist games
+   * @returns {Promise<Array>} Array of wishlist games with full details
    */
   getUserWishlist: async (userId, options = {}) => {
     const { limit, offset, sortBy = 'added_at', order = 'DESC' } = options;
-    const orderClause = buildOrderClause(`uwl.${sortBy}`, order);
+    
+    // Determine which table the sort column belongs to
+    // Wishlist-specific columns: added_at, id, user_id, app_id
+    // All other columns belong to games table
+    const wishlistColumns = ['added_at', 'id', 'user_id', 'app_id'];
+    const sortColumn = wishlistColumns.includes(sortBy) 
+      ? `uwl.${sortBy}` 
+      : `g.${sortBy}`;
+    
+    const orderClause = buildOrderClause(sortColumn, order);
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
       SELECT 
-        uwl.id,
-        uwl.user_id,
-        uwl.app_id,
-        uwl.added_at,
-        g.name,
-        g.price_final,
-        g.price_org,
-        g.discount_percent,
-        g.price_currency,
+        g.*,
+        uwl.added_at as wishlist_added_at,
         gd.header_image,
-        gd.background
+        gd.background,
+        gd.detailed_description
       FROM user_wishlist_items uwl
       INNER JOIN games g ON uwl.app_id = g.app_id
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
