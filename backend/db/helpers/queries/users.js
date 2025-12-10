@@ -12,7 +12,7 @@ const usersQueries = {
    * @returns {Promise<Object|null>} User object or null
    */
   getUserById: async (userId) => {
-    const queryText = 'SELECT id, email, username, role, date_of_birth, country, created_at FROM users WHERE id = $1';
+    const queryText = 'SELECT id, email, username, role, is_verified, date_of_birth, country, created_at FROM users WHERE id = $1';
     return await queryOne(queryText, [userId]);
   },
 
@@ -67,13 +67,13 @@ const usersQueries = {
    * @returns {Promise<Object>} Created user
    */
   createUser: async (userData) => {
-    const { email, username, password_hash, role = 'user', date_of_birth, country } = userData;
+    const { email, username, password_hash, role = 'user', is_verified = false, date_of_birth, country } = userData;
     const queryText = `
-      INSERT INTO users (email, username, password_hash, role, date_of_birth, country)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, email, username, role, date_of_birth, country
+      INSERT INTO users (email, username, password_hash, role, is_verified, date_of_birth, country)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, email, username, role, is_verified, date_of_birth, country
     `;
-    return await queryOne(queryText, [email, username, password_hash, role, date_of_birth, country]);
+    return await queryOne(queryText, [email, username, password_hash, role, is_verified, date_of_birth, country]);
   },
 
   /**
@@ -87,7 +87,7 @@ const usersQueries = {
     const values = [];
     let paramIndex = 1;
 
-    const allowedFields = ['email', 'username', 'password_hash', 'role', 'date_of_birth', 'country'];
+    const allowedFields = ['email', 'username', 'password_hash', 'role', 'is_verified', 'date_of_birth', 'country'];
     for (const [key, value] of Object.entries(userData)) {
       if (allowedFields.includes(key) && value !== undefined) {
         fields.push(`${key} = $${paramIndex}`);
@@ -105,9 +105,24 @@ const usersQueries = {
       UPDATE users
       SET ${fields.join(', ')}
       WHERE id = $${paramIndex}
-      RETURNING id, email, username, role, date_of_birth, country
+      RETURNING id, email, username, role, is_verified, date_of_birth, country
     `;
     return await queryOne(queryText, values);
+  },
+
+  /**
+   * Mark user as verified
+   * @param {number} userId
+   * @returns {Promise<Object|null>}
+   */
+  markUserVerified: async (userId) => {
+    const queryText = `
+      UPDATE users
+      SET is_verified = true
+      WHERE id = $1
+      RETURNING id, email, username, role, is_verified
+    `;
+    return await queryOne(queryText, [userId]);
   },
 
   /**
@@ -118,6 +133,17 @@ const usersQueries = {
   getUserBillingAddresses: async (userId) => {
     const queryText = 'SELECT * FROM user_billing_addresses WHERE user_id = $1';
     return await query(queryText, [userId]);
+  },
+
+  /**
+   * Get billing address by ID
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @returns {Promise<Object|null>} Address object or null
+   */
+  getBillingAddressById: async (addressId, userId) => {
+    const queryText = 'SELECT * FROM user_billing_addresses WHERE id = $1 AND user_id = $2';
+    return await queryOne(queryText, [addressId, userId]);
   },
 
   /**
@@ -133,6 +159,36 @@ const usersQueries = {
       RETURNING *
     `;
     return await queryOne(queryText, [user_id, full_name, line1, line2, city, state, postal_code, country]);
+  },
+
+  /**
+   * Update billing address
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @param {Object} addressData - Address data to update
+   * @returns {Promise<Object|null>} Updated address or null
+   */
+  updateBillingAddress: async (addressId, userId, addressData) => {
+    const { full_name, line1, line2, city, state, postal_code, country } = addressData;
+    const queryText = `
+      UPDATE user_billing_addresses
+      SET full_name = $1, line1 = $2, line2 = $3, city = $4, state = $5, postal_code = $6, country = $7
+      WHERE id = $8 AND user_id = $9
+      RETURNING *
+    `;
+    return await queryOne(queryText, [full_name, line1, line2, city, state, postal_code, country, addressId, userId]);
+  },
+
+  /**
+   * Delete billing address
+   * @param {number} addressId - Address ID
+   * @param {number} userId - User ID (for security check)
+   * @returns {Promise<boolean>} Success status
+   */
+  deleteBillingAddress: async (addressId, userId) => {
+    const queryText = 'DELETE FROM user_billing_addresses WHERE id = $1 AND user_id = $2 RETURNING id';
+    const result = await queryOne(queryText, [addressId, userId]);
+    return result !== null;
   },
 
   /**

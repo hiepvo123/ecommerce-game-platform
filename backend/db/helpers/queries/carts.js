@@ -48,12 +48,9 @@ const cartsQueries = {
         ci.id,
         ci.cart_id,
         ci.app_id,
-        g.name,
-        g.price_final,
-        g.price_org,
-        g.discount_percent,
-        g.price_currency,
-        gd.header_image
+        g.*,
+        gd.header_image,
+        gd.background
       FROM cart_items ci
       INNER JOIN games g ON ci.app_id = g.app_id
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id

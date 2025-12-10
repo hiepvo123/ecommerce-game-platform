@@ -32,7 +32,18 @@ const closeDB = async () => {
   }
 };
 
-module.exports = { client, connectDB, closeDB };
+// Query method wrapper for direct queries (backward compatibility)
+const query = async (queryText, params = []) => {
+  try {
+    const result = await client.query(queryText, params);
+    return result;
+  } catch (error) {
+    console.error('Query error:', error);
+    throw error;
+  }
+};
+
+module.exports = { client, connectDB, closeDB, query };
 
 // Test connection if run directly
 if (require.main === module) {

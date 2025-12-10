@@ -1,0 +1,105 @@
+.weekly {
+  margin: 18px 0;
+}
+
+.weekly__header {
+  background: var(--brand);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 10px 10px 0 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+  box-shadow: var(--shadow);
+}
+
+.weekly__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 18px;
+  background: var(--card-bg);
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow);
+}
+
+.game-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.game-card__body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.game-card__badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge--promo {
+  background: #fff1f0;
+  color: #d33b3b;
+}
+
+.badge--date {
+  background: #eef5ff;
+  color: #5a7bd1;
+}
+
+.badge--type {
+  background: #fff7e0;
+  color: #ad7a00;
+}
+
+.game-card__title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.game-card__desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.game-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.game-card__original {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.game-card__price {
+  font-weight: 800;
+  color: var(--brand);
+}

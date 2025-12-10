@@ -1,0 +1,13 @@
+:root {
+  --brand: #f45050;
+  --brand-dark: #d33b3b;
+  --accent: #ffd54f;
+  --accent-blue: #6fa3ef;
+  --bg: #f7f7f7;
+  --card-bg: #ffffff;
+  --text: #2c2c2c;
+  --text-muted: #777;
+  --border: #e5e5e5;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  --radius: 12px;
+}
