@@ -33,13 +33,13 @@ export const gameService = {
     return response.data;
   },
 
-  getGamesByGenre: async (genreId) => {
-    const response = await api.get(`/games/genre/${genreId}`);
+  getGamesByGenre: async (genreId, params = {}) => {
+    const response = await api.get(`/games/genre/${genreId}`, { params });
     return response.data;
   },
 
-  getGamesByCategory: async (categoryId) => {
-    const response = await api.get(`/games/category/${categoryId}`);
+  getGamesByCategory: async (categoryId, params = {}) => {
+    const response = await api.get(`/games/category/${categoryId}`, { params });
     return response.data;
   },
 };

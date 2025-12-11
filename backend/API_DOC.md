@@ -33,12 +33,14 @@ Reference (public)
 - `GET /reference/genres/:id` — `{ success:true, data:{ genre } }`
 
 Games (public; recommended uses session if present)
+- All game responses now include `publishers` (array of publisher names) along with existing fields.
 - `GET /games` — query: `limit`, `offset`, `sortBy`, `order`, `platform`, `minPrice`, `maxPrice`, `hasDiscount=true|false`; success: `{ success:true, data:{ games, count, limit, offset }, message }`.
-- `GET /games/:appId` — success: `{ success:true, data:{ game:{ ...details, genres, categories } }, message }`.
+- `GET /games/:appId` — success: `{ success:true, data:{ game:{ ...details, genres, categories, publishers } }, message }`.
 - `GET /games/search` — query: `q` (required), `limit`, `offset`, `sortBy`, `order`; success: `{ success:true, data:{ games, count, query, limit, offset }, message }`.
 - `GET /games/featured` — query: `limit`; success: `{ success:true, data:{ games }, message }`.
 - `GET /games/recommended` — query: `limit`, `offset`, `minMatches`, `sortBy`, `order`; success: `{ success:true, data:{ games, count, limit, offset }, message }`.
 - `GET /games/discounted` — query: `limit`, `offset`; success: `{ success:true, data:{ games, count, limit, offset }, message }`.
+- `GET /games/newest` — query: `limit`, `offset`, `platform`, `genreId`, `categoryId`; success: `{ success:true, data:{ games, count, limit, offset }, message }`.
 - `GET /games/genre/:genreId` — query: `limit`, `offset`, `sortBy`, `order`; success: `{ success:true, data:{ games, count, genreId, limit, offset }, message }`.
 - `GET /games/category/:categoryId` — query: `limit`, `offset`, `sortBy`, `order`; success: `{ success:true, data:{ games, count, categoryId, limit, offset }, message }`.
 

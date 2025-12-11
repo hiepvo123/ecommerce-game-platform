@@ -17,9 +17,15 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
     
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       ${orderClause}
       ${paginationClause}
     `.trim();
@@ -53,6 +59,7 @@ const gamesQueries = {
         gd.background,
         gd.categories,
         gd.genres,
+        pub.publishers,
         gs.pc_min_os,
         gs.pc_min_processor,
         gs.pc_min_memory,
@@ -69,6 +76,12 @@ const gamesQueries = {
         gs.pc_rec_storage
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       LEFT JOIN game_specs gs ON g.app_id = gs.app_id
       WHERE g.app_id = $1
     `;
@@ -118,9 +131,15 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       ${whereClause}
       ${orderClause}
       ${paginationClause}
@@ -165,9 +184,15 @@ const gamesQueries = {
     }
 
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background, ${relevanceRank} as relevance
+      SELECT g.*, gd.header_image, gd.background, pub.publishers, ${relevanceRank} as relevance
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       WHERE ${searchVector} @@ ${searchQuery}
       ${orderClause}
       ${paginationClause}
@@ -188,10 +213,16 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
       FROM games g
       INNER JOIN game_genres gg ON g.app_id = gg.app_id
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       WHERE gg.genre_id = $1
       ${orderClause}
       ${paginationClause}
@@ -212,10 +243,16 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
       FROM games g
       INNER JOIN game_categories gc ON g.app_id = gc.app_id
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       WHERE gc.category_id = $1
       ${orderClause}
       ${paginationClause}
@@ -236,9 +273,16 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*
+      SELECT g.*, descs.header_image, descs.background, pub.publishers
       FROM games g
       INNER JOIN game_developers gd ON g.app_id = gd.app_id
+      LEFT JOIN game_descriptions descs ON g.app_id = descs.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       WHERE gd.developer_id = $1
       ${orderClause}
       ${paginationClause}
@@ -259,9 +303,16 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*
+      SELECT g.*, descs.header_image, descs.background, pub.publishers
       FROM games g
       INNER JOIN game_publishers gp ON g.app_id = gp.app_id
+      LEFT JOIN game_descriptions descs ON g.app_id = descs.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp2
+        JOIN publishers p ON gp2.publisher_id = p.id
+        WHERE gp2.app_id = g.app_id
+      ) pub ON TRUE
       WHERE gp.publisher_id = $1
       ${orderClause}
       ${paginationClause}
@@ -281,9 +332,15 @@ const gamesQueries = {
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT g.*, gd.header_image, gd.background
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       WHERE g.discount_percent > 0
       ${orderClause}
       ${paginationClause}
@@ -309,9 +366,15 @@ const gamesQueries = {
     if (!profile) {
       const orderClause = buildOrderClause(`g.${sortBy}`, order);
       const queryText = `
-        SELECT g.*, gd.header_image, gd.background
+        SELECT g.*, gd.header_image, gd.background, pub.publishers
         FROM games g
         LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+        LEFT JOIN LATERAL (
+          SELECT array_agg(DISTINCT p.name) AS publishers
+          FROM game_publishers gp
+          JOIN publishers p ON gp.publisher_id = p.id
+          WHERE gp.app_id = g.app_id
+        ) pub ON TRUE
         ${orderClause}
         LIMIT $1 OFFSET $2
       `;
@@ -377,9 +440,15 @@ const gamesQueries = {
     if (conditions.length === 0) {
       const orderClause = buildOrderClause(`g.${sortBy}`, order);
       const queryText = `
-        SELECT g.*, gd.header_image, gd.background
+        SELECT g.*, gd.header_image, gd.background, pub.publishers
         FROM games g
         LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+        LEFT JOIN LATERAL (
+          SELECT array_agg(DISTINCT p.name) AS publishers
+          FROM game_publishers gp
+          JOIN publishers p ON gp.publisher_id = p.id
+          WHERE gp.app_id = g.app_id
+        ) pub ON TRUE
         ${orderClause}
         LIMIT $1 OFFSET $2
       `;
@@ -391,10 +460,16 @@ const gamesQueries = {
     const orderClause = buildOrderClause(`g.${sortBy}`, order);
     
     let queryText = `
-      SELECT g.*, gd.header_image, gd.background,
+      SELECT g.*, gd.header_image, gd.background, pub.publishers,
              COUNT(*) OVER() as total_matches
       FROM games g
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
       ${whereClause}
       ${orderClause}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
@@ -417,9 +492,15 @@ const gamesQueries = {
         // Use parameterized query for safety
         const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
         supplementQuery = `
-          SELECT g.*, gd.header_image, gd.background
+          SELECT g.*, gd.header_image, gd.background, pub.publishers
           FROM games g
           LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+          LEFT JOIN LATERAL (
+            SELECT array_agg(DISTINCT p.name) AS publishers
+            FROM game_publishers gp
+            JOIN publishers p ON gp.publisher_id = p.id
+            WHERE gp.app_id = g.app_id
+          ) pub ON TRUE
           WHERE g.app_id NOT IN (${matchedAppIds.map((_, i) => `$${i + 1}`).join(',')})
           ${supplementOrderClause}
           LIMIT $${matchedAppIds.length + 1}
@@ -428,9 +509,15 @@ const gamesQueries = {
       } else {
         const supplementOrderClause = buildOrderClause(`g.${sortBy}`, order);
         supplementQuery = `
-          SELECT g.*, gd.header_image, gd.background
+          SELECT g.*, gd.header_image, gd.background, pub.publishers
           FROM games g
           LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+          LEFT JOIN LATERAL (
+            SELECT array_agg(DISTINCT p.name) AS publishers
+            FROM game_publishers gp
+            JOIN publishers p ON gp.publisher_id = p.id
+            WHERE gp.app_id = g.app_id
+          ) pub ON TRUE
           ${supplementOrderClause}
           LIMIT $1
         `;
@@ -466,6 +553,52 @@ const gamesQueries = {
     }
     
     return matchedGames;
+  },
+
+  /**
+   * Get newest games by release date (latest first)
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} Array of newest games
+   */
+  getNewestGames: async (options = {}) => {
+    const { limit = 20, offset = 0, platform, genreId, categoryId } = options;
+    const params = [];
+    const where = [];
+
+    if (platform) {
+      params.push(platform);
+      where.push(`$${params.length} = ANY(g.platforms)`);
+    }
+
+    if (genreId) {
+      params.push(genreId);
+      where.push(`$${params.length} = ANY(g.genre_ids)`);
+    }
+
+    if (categoryId) {
+      params.push(categoryId);
+      where.push(`$${params.length} = ANY(g.category_ids)`);
+    }
+
+    const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    params.push(limit, offset);
+
+    const queryText = `
+      SELECT g.*, gd.header_image, gd.background, pub.publishers
+      FROM games g
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      LEFT JOIN LATERAL (
+        SELECT array_agg(DISTINCT p.name) AS publishers
+        FROM game_publishers gp
+        JOIN publishers p ON gp.publisher_id = p.id
+        WHERE gp.app_id = g.app_id
+      ) pub ON TRUE
+      ${whereClause}
+      ORDER BY g.release_date DESC NULLS LAST, g.recommendations_total DESC
+      LIMIT $${params.length - 1} OFFSET $${params.length}
+    `;
+
+    return await query(queryText, params);
   },
 };
 

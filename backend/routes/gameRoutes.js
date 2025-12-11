@@ -8,6 +8,7 @@ const gameController = require('../controllers/gameController');
 router.get('/recommended', gameController.getRecommendedGames); // Optional auth for personalization
 router.get('/featured', gameController.getFeaturedGames);
 router.get('/discounted', gameController.getDiscountedGames);
+router.get('/newest', gameController.getNewestGames);
 router.get('/search', gameController.searchGames);
 router.get('/genre/:genreId', gameController.getGamesByGenre);
 router.get('/category/:categoryId', gameController.getGamesByCategory);

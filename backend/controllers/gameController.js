@@ -291,6 +291,35 @@ const getDiscountedGames = async (req, res) => {
   }
 };
 
+/**
+ * Get newest games by release date
+ * GET /api/games/newest
+ */
+const getNewestGames = async (req, res) => {
+  try {
+    const { limit = 20, offset = 0, platform, genreId, categoryId } = req.query;
+
+    const games = await queries.games.getNewestGames({
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      platform,
+      genreId,
+      categoryId
+    });
+
+    return sendSuccess(res, {
+      games,
+      count: games.length,
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10)
+    }, 'Newest games retrieved successfully');
+
+  } catch (error) {
+    console.error('Get newest games error:', error);
+    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  }
+};
+
 module.exports = {
   getRecommendedGames,
   getGames,
@@ -300,5 +329,6 @@ module.exports = {
   getGamesByGenre,
   getGamesByCategory,
   getDiscountedGames,
+  getNewestGames,
 };
 

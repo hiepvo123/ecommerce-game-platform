@@ -14,6 +14,11 @@
   overflow-x: auto;
   padding: 6px;
   scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+}
+
+.hero__track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .hero__card {
@@ -50,8 +55,82 @@
   color: #fff;
 }
 
+.hero__discount {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow);
+}
+
 .hero__info {
   padding: 10px 12px 14px;
+}
+
+.hero__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.hero__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid #e5e7eb;
+}
+
+.hero__pill--date {
+  background: #e0f2fe;
+  color: #075985;
+  border-color: #bae6fd;
+}
+
+.hero__pill--age {
+  background: #ecfccb;
+  color: #3f6212;
+  border-color: #d9f99d;
+}
+
+.hero__pill--publisher {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-color: #e9d5ff;
+}
+
+.hero__pill--price {
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #e0e7ff;
+}
+
+.hero__pill--discount {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.hero__pill--strike {
+  text-decoration: line-through;
+  color: #9ca3af;
+  background: #f9fafb;
+}
+
+.hero__pill--highlight {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
 }
 
 .hero__title {
@@ -66,6 +145,24 @@
 
 .hero__price {
   font-weight: 800;
+}
+
+.hero__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.hero__price--final {
+  color: #b91c1c;
+  font-size: 1.05rem;
+}
+
+.hero__price--strike {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-size: 0.95rem;
 }
 
 .hero__arrow {
