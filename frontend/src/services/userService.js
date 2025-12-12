@@ -1,3 +1,4 @@
+// frontend/src/services/userService.js
 import api from './api';
 
 export const userService = {
@@ -32,7 +33,22 @@ export const userService = {
   },
 
   deleteBillingAddress: async (id) => {
-    const response = await api.delete(`/user/billing-addresses/${id}`);
+    const response = await api.delete(`/users/billing-addresses/${id}`);
+    return response.data;
+  },
+
+  getWishlist: async () => {
+    const response = await api.get('/wishlist');  // -> GET /api/wishlist
+    return response.data;
+  },
+
+  addToWishlist: async (appId) => {
+    const response = await api.post('/wishlist', { appId }); // -> POST /api/wishlist { appId }
+    return response.data;
+  },
+
+  removeFromWishlist: async (appId) => {
+    const response = await api.delete(`/wishlist/${appId}`); // -> DELETE /api/wishlist/:appId
     return response.data;
   },
 };

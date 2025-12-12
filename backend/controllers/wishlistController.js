@@ -3,132 +3,89 @@
 const queries = require('../db/helpers/queries');
 const { sendSuccess, sendError } = require('../utils/response');
 
-/**
- * Get user wishlist
- * GET /api/wishlist
- */
 const getWishlist = async (req, res) => {
   try {
     const userId = req.user.id;
     const { limit = 20, offset = 0, sortBy = 'added_at', order = 'DESC' } = req.query;
 
-    const games = await queries.library.getUserWishlist(userId, {
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
+    const games = await queries.wishlist.getUserWishlist(userId, {
+      limit: Number(limit),
+      offset: Number(offset),
       sortBy,
       order: order.toUpperCase()
     });
 
     return sendSuccess(res, {
       games,
-      count: games.length,
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10)
+      count: Array.isArray(games) ? games.length : 0,
+      limit: Number(limit),
+      offset: Number(offset),
     }, 'Wishlist retrieved successfully');
 
-  } catch (error) {
-    console.error('Get wishlist error:', error);
+  } catch (err) {
+    console.error('Get wishlist error:', err);
     return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
   }
 };
 
-/**
- * Add game to wishlist
- * POST /api/wishlist
- */
 const addToWishlist = async (req, res) => {
   try {
     const userId = req.user.id;
     const { appId } = req.body;
 
-    if (!appId) {
-      return sendError(res, 'Game ID (appId) is required', 'VALIDATION_ERROR', 400);
-    }
+    if (!appId) return sendError(res, 'appId required', 'VALIDATION_ERROR', 400);
 
-    // Check if game exists
-    const game = await queries.games.getGameById(parseInt(appId, 10));
-    if (!game) {
-      return sendError(res, 'Game not found', 'NOT_FOUND', 404);
-    }
+    const game = await queries.games.getGameById(Number(appId));
+    if (!game) return sendError(res, 'Game not found', 'NOT_FOUND', 404);
 
-    // Check if already in wishlist
-    const isInWishlist = await queries.library.isInWishlist(userId, parseInt(appId, 10));
-    if (isInWishlist) {
-      return sendError(res, 'Game is already in wishlist', 'ALREADY_EXISTS', 409);
-    }
+    const exists = await queries.wishlist.isInWishlist(userId, Number(appId));
+    if (exists) return sendError(res, 'Already in wishlist', 'ALREADY_EXISTS', 409);
 
-    // Add to wishlist
-    const wishlistItem = await queries.library.addToWishlist(userId, parseInt(appId, 10));
+    const wishlistItem = await queries.wishlist.addToWishlist(userId, Number(appId));
 
-    return sendSuccess(res, {
-      wishlistItem,
-      game: {
-        app_id: game.app_id,
-        name: game.name
-      }
-    }, 'Game added to wishlist successfully');
+    return sendSuccess(res, { wishlistItem, game }, 'Added to wishlist');
 
-  } catch (error) {
-    console.error('Add to wishlist error:', error);
-    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  } catch (err) {
+    console.error('Add wishlist error:', err);
+    return sendError(res, 'Internal error', 'INTERNAL_ERROR', 500);
   }
 };
 
-/**
- * Remove game from wishlist
- * DELETE /api/wishlist/:appId
- */
 const removeFromWishlist = async (req, res) => {
   try {
     const userId = req.user.id;
-    const appId = parseInt(req.params.appId, 10);
+    const appId = Number(req.params.appId);
 
-    if (isNaN(appId)) {
-      return sendError(res, 'Invalid game ID', 'VALIDATION_ERROR', 400);
-    }
+    if (isNaN(appId)) return sendError(res, 'Invalid appId', 'VALIDATION_ERROR', 400);
 
-    // Check if game is in wishlist
-    const isInWishlist = await queries.library.isInWishlist(userId, appId);
-    if (!isInWishlist) {
-      return sendError(res, 'Game is not in wishlist', 'NOT_FOUND', 404);
-    }
+    const exists = await queries.wishlist.isInWishlist(userId, appId);
+    if (!exists) return sendError(res, 'Not found in wishlist', 'NOT_FOUND', 404);
 
-    // Remove from wishlist
-    await queries.library.removeFromWishlist(userId, appId);
+    const removed = await queries.wishlist.removeFromWishlist(userId, appId);
+    if (!removed) return sendError(res, 'Remove failed', 'INTERNAL_ERROR', 500);
 
-    return sendSuccess(res, {
-      appId
-    }, 'Game removed from wishlist successfully');
+    return sendSuccess(res, { appId }, 'Removed');
 
-  } catch (error) {
-    console.error('Remove from wishlist error:', error);
-    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  } catch (err) {
+    console.error('Remove wishlist error:', err);
+    return sendError(res, 'Internal error', 'INTERNAL_ERROR', 500);
   }
 };
 
-/**
- * Check if game is in wishlist
- * GET /api/wishlist/check/:appId
- */
 const checkWishlist = async (req, res) => {
   try {
     const userId = req.user.id;
-    const appId = parseInt(req.params.appId, 10);
+    const appId = Number(req.params.appId);
 
-    if (isNaN(appId)) {
-      return sendError(res, 'Invalid game ID', 'VALIDATION_ERROR', 400);
-    }
+    if (isNaN(appId)) return sendError(res, 'Invalid id', 'VALIDATION_ERROR', 400);
 
-    const isInWishlist = await queries.library.isInWishlist(userId, appId);
+    const isInWishlist = await queries.wishlist.isInWishlist(userId, appId);
 
-    return sendSuccess(res, {
-      appId,
-      isInWishlist
-    }, 'Wishlist status retrieved successfully');
+    return sendSuccess(res, { appId, isInWishlist }, 'Status retrieved');
 
-  } catch (error) {
-    console.error('Check wishlist error:', error);
-    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  } catch (err) {
+    console.error('Check wishlist error:', err);
+    return sendError(res, 'Internal error', 'INTERNAL_ERROR', 500);
   }
 };
 
@@ -138,4 +95,3 @@ module.exports = {
   removeFromWishlist,
   checkWishlist,
 };
-
