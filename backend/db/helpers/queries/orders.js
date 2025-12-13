@@ -6,6 +6,40 @@ const { query, queryOne, transaction, buildOrderClause, buildPaginationClause } 
  */
 
 const ordersQueries = {
+
+
+  /**
+   * Get recent orders(For dashboard) -> là kiểu lay một số liệu thống kê đơn giản
+   * 
+   */
+  getRecentOrders: async (limit = 5) => {
+  const queryText = `
+    SELECT 
+      o.id,
+      o.total_price,
+      o.order_status,
+      o.created_at,
+      u.email AS user_email
+    FROM orders o
+    JOIN users u ON o.user_id = u.id
+    ORDER BY o.created_at DESC
+    LIMIT $1
+  `;
+  return await query(queryText, [limit]);
+},
+
+  /**
+   * Get total count of orders 
+   * @returns {Promise<numbr} Total order count
+   */
+  getCountOfOrders: async () => {
+    const queryText = 'SELECT COUNT(*) AS count FROM orders';
+    const result = await queryOne(queryText);
+    // trả về số lượng dưới dạng số nguyên
+    return parseInt(result?.count, 10)||0;
+  },
+
+
   /**
    * Get order by ID
    * @param {number} orderId - Order ID

@@ -6,6 +6,19 @@ const { query, queryOne, buildWhereClause, buildOrderClause, buildPaginationClau
  */
 
 const usersQueries = {
+
+  /**
+   * Get total count of users
+   * @returns {Promise<number>} Total user count
+   */
+  getCountOfUsers: async () => {
+    const queryText = 'SELECT COUNT(*) AS count FROM users';
+    const result = await queryOne(queryText);
+    // Trả về số lượng dưới dạng số nguyên
+    return parseInt(result?.count, 10)||0;
+  },
+
+
   /**
    * Get user by ID
    * @param {number} userId - User ID

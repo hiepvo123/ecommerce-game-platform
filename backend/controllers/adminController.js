@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const queries = require('../db/helpers/queries');
+const { sendSuccess, sendError } = require('../utils/response'); // 🔥 [CẬP NHẬT] Thêm import
+
 
 module.exports = {
   login: async (req, res) => {
@@ -44,5 +46,33 @@ module.exports = {
       console.error("Admin login error:", error);
       res.status(500).json({ message: "Server error" });
     }
+  },
+
+  /**
+   * [CHỨC NĂNG MỚI] Lấy số liệu thống kê Dashboard
+   * GET /api/admin/stats
+   */
+  getStats: async (req, res) => {
+    try {
+      // Giả định các hàm query helper để đếm số lượng bản ghi:
+      const [totalUsers, totalGames, totalOrders] = await Promise.all([
+        queries.users.getCountOfUsers(),
+        queries.games.getCountOfGames(),
+        queries.orders.getCountOfOrders(), 
+      ]);
+
+      // Trả về dữ liệu thống kê theo định dạng chuẩn
+      return sendSuccess(res, {
+        orders: totalOrders, 
+        users: totalUsers,
+        games: totalGames,
+      }, 'Dashboard stats retrieved successfully');
+
+    } catch (error) {
+      console.error("Get admin stats error:", error);
+      return sendError(res, "Failed to retrieve stats", "INTERNAL_ERROR", 500);
+    }
   }
+
+
 };

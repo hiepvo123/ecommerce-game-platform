@@ -6,6 +6,19 @@ const { query, queryOne, buildWhereClause, buildOrderClause, buildPaginationClau
  */
 
 const gamesQueries = {
+
+  /**
+   * Get total count of games
+   * @returns {Promise<number>} Total game count
+   */
+  getCountOfGames: async () => {
+    const queryText = 'SELECT COUNT(*) AS count FROM games';
+    const result = await queryOne(queryText);
+    // Trả về số lượng dưới dạng số nguyên
+    return parseInt(result?.count, 10)||0;
+  },
+
+
   /**
    * Get all games
    * @param {Object} options - Query options (limit, offset, sortBy, order)
