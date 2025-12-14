@@ -19,16 +19,43 @@ const getProfile = async (req, res) => {
   try {
     const user = getCurrentUser(req);
 
-    const profile = await queries.users.getUserProfile(user.id);
+    let profile = await queries.users.getUserWithProfile(user.id);
+    
+    // If profile is null, get basic user info and create default profile
+    if (!profile) {
+      const userInfo = await queries.users.getUserById(user.id);
+      if (userInfo) {
+        profile = {
+          id: userInfo.id,
+          email: userInfo.email,
+          username: userInfo.username,
+          role: userInfo.role,
+          date_of_birth: userInfo.date_of_birth,
+          country: userInfo.country,
+          prefer_lang_ids: null,
+          prefer_genre_ids: null,
+          prefer_cate_ids: null,
+          prefer_platforms: null
+        };
+      } else {
+        // Fallback if user not found
+        profile = {
+          id: user.id,
+          email: user.email || null,
+          username: user.username || null,
+          role: user.role || null,
+          date_of_birth: null,
+          country: null,
+          prefer_lang_ids: null,
+          prefer_genre_ids: null,
+          prefer_cate_ids: null,
+          prefer_platforms: null
+        };
+      }
+    }
     
     return sendSuccess(res, {
-      profile: profile || {
-        user_id: user.id,
-        prefer_lang_ids: null,
-        prefer_genre_ids: null,
-        prefer_cate_ids: null,
-        prefer_platforms: null
-      }
+      profile: profile
     }, 'Profile retrieved successfully');
 
   } catch (error) {
@@ -45,31 +72,66 @@ const updateProfile = async (req, res) => {
   try {
     const user = getCurrentUser(req);
 
-    const { preferLangIds, preferGenreIds, preferCateIds, preferPlatforms } = req.body;
+    const { username, email, dateOfBirth, preferLangIds, preferGenreIds, preferCateIds, preferPlatforms } = req.body;
 
-    // Validate arrays
-    const prefer_lang_ids = Array.isArray(preferLangIds) ? preferLangIds : null;
-    const prefer_genre_ids = Array.isArray(preferGenreIds) ? preferGenreIds : null;
-    const prefer_cate_ids = Array.isArray(preferCateIds) ? preferCateIds : null;
-    const prefer_platforms = Array.isArray(preferPlatforms) ? preferPlatforms : null;
+    // Update user basic info (username, email, date_of_birth) if provided
+    const userUpdateData = {};
+    if (username !== undefined) {
+      userUpdateData.username = username;
+    }
+    if (email !== undefined) {
+      userUpdateData.email = email;
+    }
+    if (dateOfBirth !== undefined) {
+      // Accept empty string as null, or validate date format
+      userUpdateData.date_of_birth = dateOfBirth === '' || dateOfBirth === null ? null : dateOfBirth;
+    }
 
-    // Validate platforms (should be: windows, mac, linux)
-    if (prefer_platforms) {
-      const validPlatforms = ['windows', 'mac', 'linux'];
-      const invalidPlatforms = prefer_platforms.filter(p => !validPlatforms.includes(p));
-      if (invalidPlatforms.length > 0) {
-        return sendError(res, `Invalid platforms: ${invalidPlatforms.join(', ')}. Valid platforms are: windows, mac, linux`, 'VALIDATION_ERROR', 400);
+    // Update users table if username or email is provided
+    let updatedUser = null;
+    if (Object.keys(userUpdateData).length > 0) {
+      try {
+        updatedUser = await queries.users.updateUser(user.id, userUpdateData);
+      } catch (error) {
+        // Handle unique constraint violations (e.g., username or email already exists)
+        if (error.code === '23505') { // PostgreSQL unique violation
+          const field = error.constraint?.includes('username') ? 'username' : 'email';
+          return sendError(res, `${field === 'username' ? 'Username' : 'Email'} already exists`, 'VALIDATION_ERROR', 409);
+        }
+        throw error; // Re-throw if it's not a unique constraint error
       }
     }
 
-    const profile = await queries.users.upsertUserProfile(user.id, {
-      prefer_lang_ids: prefer_lang_ids,
-      prefer_genre_ids: prefer_genre_ids,
-      prefer_cate_ids: prefer_cate_ids,
-      prefer_platforms: prefer_platforms
-    });
+    // Update user preferences if provided
+    let profile = null;
+    if (preferLangIds !== undefined || preferGenreIds !== undefined || preferCateIds !== undefined || preferPlatforms !== undefined) {
+      // Validate arrays
+      const prefer_lang_ids = Array.isArray(preferLangIds) ? preferLangIds : null;
+      const prefer_genre_ids = Array.isArray(preferGenreIds) ? preferGenreIds : null;
+      const prefer_cate_ids = Array.isArray(preferCateIds) ? preferCateIds : null;
+      const prefer_platforms = Array.isArray(preferPlatforms) ? preferPlatforms : null;
 
-    return sendSuccess(res, { profile }, 'Profile updated successfully');
+      // Validate platforms (should be: windows, mac, linux)
+      if (prefer_platforms) {
+        const validPlatforms = ['windows', 'mac', 'linux'];
+        const invalidPlatforms = prefer_platforms.filter(p => !validPlatforms.includes(p));
+        if (invalidPlatforms.length > 0) {
+          return sendError(res, `Invalid platforms: ${invalidPlatforms.join(', ')}. Valid platforms are: windows, mac, linux`, 'VALIDATION_ERROR', 400);
+        }
+      }
+
+      profile = await queries.users.upsertUserProfile(user.id, {
+        prefer_lang_ids: prefer_lang_ids,
+        prefer_genre_ids: prefer_genre_ids,
+        prefer_cate_ids: prefer_cate_ids,
+        prefer_platforms: prefer_platforms
+      });
+    }
+
+    // Get updated profile with user info
+    const fullProfile = await queries.users.getUserWithProfile(user.id);
+
+    return sendSuccess(res, { profile: fullProfile }, 'Profile updated successfully');
 
   } catch (error) {
     console.error('Update profile error:', error);
@@ -227,6 +289,37 @@ const deleteBillingAddress = async (req, res) => {
   }
 };
 
+/**
+ * Get user library (owned games)
+ * GET /api/user/library
+ */
+const getLibrary = async (req, res) => {
+  try {
+    const user = getCurrentUser(req);
+
+    const { limit, offset, sortBy, order } = req.query;
+    const options = {
+      limit: limit ? parseInt(limit, 10) : undefined,
+      offset: offset ? parseInt(offset, 10) : undefined,
+      sortBy: sortBy || 'added_at',
+      order: order || 'DESC'
+    };
+
+    const games = await queries.library.getUserLibrary(user.id, options);
+
+    return sendSuccess(res, {
+      games: games,
+      count: games.length,
+      limit: options.limit,
+      offset: options.offset
+    }, 'Library retrieved successfully');
+
+  } catch (error) {
+    console.error('Get library error:', error);
+    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -235,5 +328,6 @@ module.exports = {
   createBillingAddress,
   updateBillingAddress,
   deleteBillingAddress,
+  getLibrary,
 };
 

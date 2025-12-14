@@ -14,20 +14,24 @@ const libraryQueries = {
    */
   getUserLibrary: async (userId, options = {}) => {
     const { limit, offset, sortBy = 'added_at', order = 'DESC' } = options;
-    const orderClause = buildOrderClause(`ugl.${sortBy}`, order);
+    
+    // Determine which table the sort column belongs to
+    const libraryColumns = ['added_at', 'id', 'user_id', 'app_id', 'order_id'];
+    const sortColumn = libraryColumns.includes(sortBy) 
+      ? `ugl.${sortBy}` 
+      : `g.${sortBy}`;
+    
+    const orderClause = buildOrderClause(sortColumn, order);
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
       SELECT 
-        ugl.id,
-        ugl.user_id,
-        ugl.app_id,
+        g.*,
+        ugl.added_at as library_added_at,
         ugl.order_id,
-        ugl.added_at,
-        g.name,
-        g.price_currency,
         gd.header_image,
-        gd.background
+        gd.background,
+        gd.detailed_description
       FROM user_game_library ugl
       INNER JOIN games g ON ugl.app_id = g.app_id
       LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id

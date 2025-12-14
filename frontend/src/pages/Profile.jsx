@@ -5,7 +5,7 @@ import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
-  const { user, setUser } = useAuth();
+  const { user , setUser} = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,13 +13,23 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
+    dateOfBirth: "",
   });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   // ------------------
   //  NEW: WISHLIST STATES (implemented)
   // ------------------
   const [wishlist, setWishlist] = useState([]);
   const [loadingWishlist, setLoadingWishlist] = useState(true);
+  // ---------------------
+
+  // ------------------
+  //  NEW: LIBRARY STATES (owned games)
+  // ------------------
+  const [library, setLibrary] = useState([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(true);
   // ---------------------
 
   // Backend returns all game fields (g.*) plus wishlist-specific fields
@@ -30,12 +40,17 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const data = await userService.getProfile();
-        // backend returns { profile: { ... } } or profile object depending on impl.
-        const profileData = data?.profile ?? data;
+        // backend returns { success: true, data: { profile: { ... } }, message: ... }
+        const profileData = data?.data?.profile ?? data?.profile ?? data;
         setProfile(profileData);
+        // Format date_of_birth for input field (YYYY-MM-DD format)
+        const dateOfBirth = profileData?.date_of_birth 
+          ? String(profileData.date_of_birth).slice(0, 10) 
+          : '';
         setFormData({
           username: profileData?.username || '',
-          email: profileData?.email || ''
+          email: profileData?.email || '',
+          dateOfBirth: dateOfBirth
         });
       } catch (e) {
         console.error("Error fetching profile:", e);
@@ -76,8 +91,40 @@ const Profile = () => {
     };
     // ---------------------
 
+    // ------------------
+    // NEW: Fetch Library (owned games)
+    // ------------------
+    const fetchLibrary = async () => {
+      try {
+        const response = await userService.getLibrary();
+        // Backend returns: { success: true, data: { games: [...], count, limit, offset }, message }
+        let gamesRaw = [];
+        if (response?.data?.games && Array.isArray(response.data.games)) {
+          gamesRaw = response.data.games;
+        } else if (Array.isArray(response?.data)) {
+          gamesRaw = response.data;
+        } else if (Array.isArray(response?.games)) {
+          gamesRaw = response.games;
+        } else if (Array.isArray(response)) {
+          gamesRaw = response;
+        }
+
+        // Map each item to proper keys (backend returns snake_case, we keep it for consistency)
+        const games = gamesRaw.map((raw) => raw);
+
+        setLibrary(games);
+      } catch (err) {
+        console.error("Failed to load library", err);
+        setLibrary([]);
+      } finally {
+        setLoadingLibrary(false);
+      }
+    };
+    // ---------------------
+
     fetchProfile();
     fetchWishlist();
+    fetchLibrary();
   }, []);
 
   const handleEditToggle = () => {
@@ -86,34 +133,68 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
+      setError(null);
+      setSuccess(null);
+      
       const updatedData = await userService.updateProfile(formData);
 
-      // backend may return updated object inside .profile or raw object
-      const updatedProfile = updatedData?.profile ?? updatedData;
+      // backend returns { success: true, data: { profile: { ... } }, message: ... }
+      const updatedProfile = updatedData?.data?.profile ?? updatedData?.profile ?? updatedData;
 
       setProfile(updatedProfile);
 
+      // Format date_of_birth for input field (YYYY-MM-DD format)
+      const dateOfBirth = updatedProfile?.date_of_birth 
+        ? String(updatedProfile.date_of_birth).slice(0, 10) 
+        : '';
       setFormData({
-        username: updatedProfile.username,
-        email: updatedProfile.email
+        username: updatedProfile?.username ?? '',
+        email: updatedProfile?.email ?? '',
+        dateOfBirth: dateOfBirth
       });
 
-      setUser(updatedProfile);
-
+      setSuccess('Profile updated successfully!');
       setEditing(false);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
       console.error("Error updating profile:", e);
+      const errorMessage = e?.response?.data?.error?.message || e?.message || 'Failed to update profile. Please try again.';
+      setError(errorMessage);
     }
   };
 
   if (loading) return <div>Loading...</div>;
 
-  const displayName =
-    profile?.username ||
-    `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() ||
-    (profile?.email ? profile.email.split('@')[0] : 'User');
+  const displayName = (() => {
+    if (profile?.username && profile.username.trim() !== '') {
+      return profile.username;
+    }
+  
+    if (
+      (profile?.firstName && profile.firstName.trim() !== '') ||
+      (profile?.lastName && profile.lastName.trim() !== '')
+    ) {
+      return `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim();
+    }
+  
+    if (profile?.email) {
+      return profile.email.split('@')[0];
+    }
+  
+    return 'User';
+  })();
+  
 
-  const joinedDate = profile?.createdAt ? String(profile.createdAt).slice(0, 10) : '';
+  // Format date_of_birth for display (YYYY-MM-DD -> DD/MM/YYYY or show "Not set")
+  const birthDate = profile?.date_of_birth 
+    ? (() => {
+        const dateStr = String(profile.date_of_birth).slice(0, 10);
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+      })()
+    : 'Not set';
 
 
   return (
@@ -134,7 +215,7 @@ const Profile = () => {
 
             <div style={styles.infoColumn}>
               <p style={styles.email}>{profile?.email}</p>
-              <p style={styles.joined}>Joined: {joinedDate}</p>
+              <p style={styles.birthDate}>Date of Birth: {birthDate}</p>
               <p style={styles.role}>Role: {profile?.role || (user?.role ?? 'user')}</p>
             </div>
           </div>
@@ -146,7 +227,15 @@ const Profile = () => {
               </button>
             ) : (
               <>
+                {error && (
+                  <div style={styles.errorMessage}>{error}</div>
+                )}
+                {success && (
+                  <div style={styles.successMessage}>{success}</div>
+                )}
                 <input
+                  id="username"
+                  name="username"
                   type="text"
                   placeholder="Username"
                   value={formData.username}
@@ -154,15 +243,30 @@ const Profile = () => {
                   style={styles.input}
                 />
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   placeholder="Email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   style={styles.input}
                 />
+                <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  placeholder="Date of Birth"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  style={styles.input}
+                />
                 <div style={styles.actionsRow}>
                   <button style={styles.saveBtn} onClick={handleSave}>Save</button>
-                  <button style={styles.cancelBtn} onClick={handleEditToggle}>Cancel</button>
+                  <button style={styles.cancelBtn} onClick={() => {
+                    setEditing(false);
+                    setError(null);
+                    setSuccess(null);
+                  }}>Cancel</button>
                 </div>
               </>
             )}
@@ -170,11 +274,55 @@ const Profile = () => {
         </div>
 
         {/* --------------------------------------- */}
-        {/* OWNED GAMES */}
+        {/* OWNED GAMES — FULL IMPLEMENTATION */}
         {/* --------------------------------------- */}
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Owned Games</h2>
-          <div style={styles.placeholderBox}>Coming soon...</div>
+
+          {loadingLibrary ? (
+            <div style={styles.placeholderBox}>Loading owned games...</div>
+          ) : library.length === 0 ? (
+            <div style={styles.placeholderBox}>You don't own any games yet.</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+              {library.map((game) => (
+                <div key={game.app_id} style={styles.gameCard}>
+                  <img
+                    src={game.header_image || game.background || ''}
+                    alt={game.name || 'Game'}
+                    style={{ width: "100%", borderRadius: "10px", objectFit: "cover", height: 120 }}
+                  />
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{game.name || 'Untitled Game'}</h4>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                    <div style={{ fontSize: 14, color: '#6b7280', fontWeight: 500 }}>
+                      {game.price_final != null ? (
+                        <>
+                          <span style={{ color: '#111' }}>${Number(game.price_final).toFixed(2)}</span>
+                          {game.price_org && Number(game.price_org) > Number(game.price_final) && (
+                            <span style={{ textDecoration: 'line-through', marginLeft: 8, color: '#9ca3af' }}>
+                              ${Number(game.price_org).toFixed(2)}
+                            </span>
+                          )}
+                        </>
+                      ) : game.price_org ? (
+                        `$${Number(game.price_org).toFixed(2)}`
+                      ) : (
+                        'Price N/A'
+                      )}
+                    </div>
+
+                    <button
+                      style={styles.secondarySmallBtn}
+                      onClick={() => window.location.href = `/game/${game.app_id}`}
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* --------------------------------------- */}
@@ -333,7 +481,7 @@ const styles = {
     color: "#555"
   },
 
-  joined: {
+  birthDate: {
     fontSize: "0.9rem",
     color: "#777"
   },
@@ -438,5 +586,25 @@ const styles = {
     border: "1px solid #e5e7eb",
     borderRadius: "6px",
     cursor: "pointer"
+  },
+
+  errorMessage: {
+    padding: "10px",
+    background: "#fee2e2",
+    color: "#dc2626",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    marginBottom: "10px",
+    border: "1px solid #fecaca"
+  },
+
+  successMessage: {
+    padding: "10px",
+    background: "#d1fae5",
+    color: "#059669",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    marginBottom: "10px",
+    border: "1px solid #a7f3d0"
   }
 };

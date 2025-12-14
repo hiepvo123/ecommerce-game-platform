@@ -43,12 +43,17 @@ export const userService = {
   },
 
   addToWishlist: async (appId) => {
-    const response = await api.post('/wishlist', { appId }); // -> POST /api/wishlist { appId }
+    const response = await api.post('/wishlist', {appId}); // -> POST /api/wishlist { appId }
     return response.data;
   },
 
   removeFromWishlist: async (appId) => {
     const response = await api.delete(`/wishlist/${appId}`); // -> DELETE /api/wishlist/:appId
+    return response.data;
+  },
+
+  getLibrary: async () => {
+    const response = await api.get('/user/library'); // -> GET /api/user/library
     return response.data;
   },
 };

@@ -19,5 +19,8 @@ router.post('/billing-addresses', userController.createBillingAddress);
 router.put('/billing-addresses/:id', userController.updateBillingAddress);
 router.delete('/billing-addresses/:id', userController.deleteBillingAddress);
 
+// Library routes
+router.get('/library', userController.getLibrary);
+
 module.exports = router;
 
