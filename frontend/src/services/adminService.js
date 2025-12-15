@@ -12,4 +12,11 @@ export const adminService = {
     // Trả về { orders: number, users: number, games: number }
     return response.data; 
   },
+
+  // 🔥 [THÊM] Hàm mới: Lấy danh sách đơn hàng gần đây
+  getRecentOrders: async () => {
+    const response = await api.get('/admin/recent-orders');
+    return response.data; // { success, data: [...] }
+  },
+
 };

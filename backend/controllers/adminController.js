@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const queries = require('../db/helpers/queries');
 const { sendSuccess, sendError } = require('../utils/response'); // 🔥 [CẬP NHẬT] Thêm import
+const { getRecentOrders } = require('../db/helpers/queries/orders');
 
 
 module.exports = {
@@ -92,7 +93,18 @@ module.exports = {
       console.error("Get admin stats error:", error);
       return sendError(res, "Failed to retrieve stats", "INTERNAL_ERROR", 500);
     }
+  },
+
+  // 🔥 [CHỨC NĂNG MỚI] Lấy danh sách đơn hàng gần đây để hiện lên dashboard
+  getRecentOrders: async (req, res) => {
+    try {
+      const recentOrders = await getRecentOrders(3); // Lấy 3 đơn hàng gần đây nhất
+    return sendSuccess(res, recentOrders, 'Recent orders retrieved');
+  } catch (error) {
+    console.error('Get recent orders error:', error);
+    return sendError(res, 'Failed to load recent orders', 'INTERNAL_ERROR', 500);
   }
+}
 
 
 };

@@ -30,6 +30,27 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
+  // Fetch recent orders on component mount
+  useEffect(() => {
+    const fetchRecentOrders = async () => {
+      try {
+        setLoadingOrders(true);
+        const response = await adminService.getRecentOrders();
+        setRecentOrders(response.data);
+      } catch (err) {
+        console.error('Failed to load recent orders', err);
+        setRecentOrders([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    fetchRecentOrders();
+  }, []);
+
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -106,6 +127,50 @@ const AdminDashboard = () => {
                         ]}
                     />
                 </div>
+
+        {/* 🔥 [THÊM] Phần Recent Orders */}
+<div style={styles.recentCard}>
+  <h3 style={styles.actionTitle}>🕒 Recent Orders</h3>
+
+  {loadingOrders ? (
+    <p style={styles.placeholder}>Loading recent orders...</p>
+  ) : recentOrders.length === 0 ? (
+    <p style={styles.placeholder}>No recent orders found.</p>
+  ) : (
+    <table style={styles.table}>
+      <thead>
+        <tr>
+          <th style ={styles.th}>ID</th>
+          <th style ={styles.th}>User</th>
+          <th style ={styles.th}>Total</th>
+          <th style ={styles.th}>Status</th>
+          <th style ={styles.th}>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {recentOrders.map((order) => (
+          <tr key={order.id}>
+            <td style ={styles.td}>#{order.id}</td>
+            <td>{order.user_email}</td>
+            <td>${Number(order.total_price).toFixed(2)}</td>
+            <td>
+              <span style={{
+                ...styles.statusBadge,
+                ...(order.order_status === 'COMPLETED'
+                  ? styles.statusCompleted
+                  : styles.statusPending)
+              }}>
+                {order.order_status}
+              </span>
+            </td>
+            <td>{new Date(order.created_at).toLocaleDateString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
+
       </main>
     </>
   );
@@ -200,4 +265,59 @@ const styles = {
     fontSize: '18px',
     color: '#111827',
   },
+
+  recentCard: {
+  marginTop: '24px',
+  background: '#fff',
+  border: '1px solid #e5e7eb',
+  borderRadius: '14px',
+  padding: '20px',
+  boxShadow: '0 5px 15px rgba(0,0,0,0.04)',
+},
+
+table: {
+  width: '100%',
+  borderCollapse: 'collapse',
+  tableLayout: 'fixed',
+  fontSize: '14px',
+},
+
+statusBadge: {
+  padding: '4px 10px',
+  borderRadius: '999px',
+  fontSize: '12px',
+  fontWeight: 600,
+},
+
+statusCompleted: {
+  background: '#dcfce7',
+  color: '#166534',
+},
+
+statusPending: {
+  background: '#fef3c7',
+  color: '#92400e',
+},
+
+placeholder: {
+  color: '#9ca3af',
+  fontStyle: 'italic',
+},
+
+th: {
+  textAlign: 'left',
+  padding: '12px 10px',
+  color: '#6b7280',
+  fontWeight: 600,
+  fontSize: '13px',
+},
+
+td: {
+  padding: '12px 10px',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+},
+
 };
