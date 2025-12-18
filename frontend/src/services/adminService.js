@@ -19,6 +19,12 @@ export const adminService = {
     return response.data; // { success, data: [...] }
   },
 
+  // Lấy danh sách review gần đây cho dashboard
+  getRecentReviews: async () => {
+    const response = await api.get('/admin/reviews/recent');
+    return response.data; // { success, data: [...] }
+  },
+
   // Get all orders
   getAllOrders: async (params = {}) => {
     const response = await api.get('/admin/orders', { params });
@@ -40,6 +46,18 @@ export const adminService = {
   // Get all users
   getAllUsers: async (params = {}) => {
     const response = await api.get('/admin/users', { params });
+    return response.data;
+  },
+
+  // Get all reviews (admin)
+  getAllReviews: async (params = {}) => {
+    const response = await api.get('/admin/reviews', { params });
+    return response.data;
+  },
+
+  // Create or update reply to a review (admin)
+  replyToReview: async (reviewId, replyText) => {
+    const response = await api.put(`/admin/reviews/${reviewId}/reply`, { replyText });
     return response.data;
   },
 

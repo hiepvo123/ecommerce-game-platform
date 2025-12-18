@@ -25,7 +25,7 @@ const usersQueries = {
    * @returns {Promise<Object|null>} User object or null
    */
   getUserById: async (userId) => {
-    const queryText = 'SELECT id, email, username, role, is_verified, date_of_birth, country, created_at FROM users WHERE id = $1';
+    const queryText = 'SELECT id, email, username, role, is_verified, date_of_birth, country FROM users WHERE id = $1';
     return await queryOne(queryText, [userId]);
   },
 
@@ -242,12 +242,12 @@ const usersQueries = {
    * @returns {Promise<Array>} Array of users
    */
   getAllUsers: async (options = {}) => {
-    const { limit, offset, sortBy = 'created_at', order = 'DESC' } = options;
+    const { limit, offset, sortBy = 'id', order = 'DESC' } = options;
     const orderClause = buildOrderClause(sortBy, order);
     const paginationClause = buildPaginationClause(limit, offset);
 
     const queryText = `
-      SELECT id, email, username, role, is_verified, date_of_birth, country, created_at
+      SELECT id, email, username, role, is_verified, date_of_birth, country
       FROM users
       ${orderClause}
       ${paginationClause}

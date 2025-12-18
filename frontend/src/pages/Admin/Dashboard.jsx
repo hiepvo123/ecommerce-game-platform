@@ -32,6 +32,8 @@ const AdminDashboard = () => {
 
   const [recentOrders, setRecentOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [recentReviews, setRecentReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   // Fetch recent orders on component mount
   useEffect(() => {
@@ -48,6 +50,23 @@ const AdminDashboard = () => {
       }
     };
     fetchRecentOrders();
+  }, []);
+
+  // Fetch recent reviews on component mount
+  useEffect(() => {
+    const fetchRecentReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const response = await adminService.getRecentReviews();
+        setRecentReviews(response.data || []);
+      } catch (err) {
+        console.error('Failed to load recent reviews', err);
+        setRecentReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchRecentReviews();
   }, []);
 
 
@@ -117,7 +136,7 @@ const AdminDashboard = () => {
                         title="🧑‍💻 User Control"
                         actions={[
                             { icon: "👥", label: "Manage User Accounts", path: "/admin/users" },
-                            { icon: "💬", label: "Manage Reviews"      /*, path: "/admin/reviews" */},
+                            { icon: "💬", label: "Manage Reviews", path: "/admin/reviews" },
                         ]}
                         navigate={navigate}
                     />
@@ -132,7 +151,7 @@ const AdminDashboard = () => {
                 </div>
 
         {/* 🔥 [THÊM] Phần Recent Orders */}
-<div style={styles.recentCard}>
+        <div style={styles.recentCard}>
   <h3 style={styles.actionTitle}>🕒 Recent Orders</h3>
 
   {loadingOrders ? (
@@ -173,6 +192,55 @@ const AdminDashboard = () => {
     </table>
   )}
 </div>
+
+        {/* 🔥 [THÊM] Phần Recent Reviews */}
+        <div style={styles.recentCard}>
+          <h3 style={styles.actionTitle}>📝 Recent Reviews</h3>
+
+          {loadingReviews ? (
+            <p style={styles.placeholder}>Loading recent reviews...</p>
+          ) : recentReviews.length === 0 ? (
+            <p style={styles.placeholder}>No recent reviews found.</p>
+          ) : (
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Game</th>
+                  <th style={styles.th}>User</th>
+                  <th style={styles.th}>Verdict</th>
+                  <th style={styles.th}>Review</th>
+                  <th style={styles.th}>Reviewed At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentReviews.map((rev) => (
+                  <tr key={rev.id}>
+                    <td style={styles.td}>{rev.game_name || `#${rev.app_id}`}</td>
+                    <td style={styles.td}>{rev.username || rev.email || `User #${rev.user_id}`}</td>
+                    <td style={styles.td}>
+                      <span
+                        style={{
+                          ...styles.statusBadge,
+                          ...(rev.is_recommended ? styles.statusCompleted : styles.statusPending),
+                        }}
+                      >
+                        {rev.is_recommended ? 'Recommended' : 'Not Recommended'}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      {rev.review_text && rev.review_text.length > 80
+                        ? `${rev.review_text.slice(0, 80)}…`
+                        : rev.review_text || '—'}
+                    </td>
+                    <td style={styles.td}>
+                      {rev.review_at ? new Date(rev.review_at).toLocaleDateString() : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
 
       </main>
     </>

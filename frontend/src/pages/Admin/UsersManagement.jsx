@@ -75,7 +75,6 @@ const UsersManagement = () => {
                     <th style={styles.th}>Role</th>
                     <th style={styles.th}>Verified</th>
                     <th style={styles.th}>Country</th>
-                    <th style={styles.th}>Created At</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -105,9 +104,6 @@ const UsersManagement = () => {
                         </span>
                       </td>
                       <td style={styles.td}>{user.country || '—'}</td>
-                      <td style={styles.td}>
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
                     </tr>
                   ))}
                 </tbody>

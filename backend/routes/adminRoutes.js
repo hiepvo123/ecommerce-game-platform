@@ -14,6 +14,10 @@ router.get('/recent-orders', requireAdmin, adminController.getRecentOrders);
 router.get('/orders', requireAdmin, adminController.getAllOrders);
 // Get all users
 router.get('/users', requireAdmin, adminController.getAllUsers);
+// Reviews (admin)
+router.get('/reviews/recent', requireAdmin, adminController.getRecentReviews);
+router.get('/reviews', requireAdmin, adminController.getAllReviews);
+router.put('/reviews/:id/reply', requireAdmin, adminController.replyToReview);
 // Get all games
 router.get('/games', requireAdmin, adminController.getAllGames);
 // 🔥 [CẬP NHẬT] Tuyến đường mới: Tạo game mới

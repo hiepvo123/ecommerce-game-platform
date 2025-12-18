@@ -19,6 +19,7 @@ import OrdersManagement from './pages/Admin/OrdersManagement';
 import UsersManagement from './pages/Admin/UsersManagement';
 import GamesManagement from './pages/Admin/GamesManagement';
 import PendingPayments from './pages/Admin/PendingPayments';
+import ReviewsManagement from './pages/Admin/ReviewsManagement';
 import SearchGames from './pages/SearchGames';
 import Library from './pages/Library';
 
@@ -114,6 +115,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <UsersManagement />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/reviews"
+                element={
+                  <PrivateRoute>
+                    <ReviewsManagement />
                   </PrivateRoute>
                 }
               />

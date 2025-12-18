@@ -712,6 +712,19 @@ const GameDetail = () => {
                         {r.review_text && (
                           <p style={styles.reviewBody}>{r.review_text}</p>
                         )}
+                        {r.reply_text && (
+                          <div style={styles.adminReplyBox}>
+                            <div style={styles.adminReplyHeader}>
+                              <span style={styles.adminReplyLabel}>Developer response</span>
+                              {r.reply_admin_username && (
+                                <span style={styles.adminReplyBy}>
+                                  {r.reply_admin_username}
+                                </span>
+                              )}
+                            </div>
+                            <p style={styles.adminReplyBody}>{r.reply_text}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1149,6 +1162,33 @@ const styles = {
     margin: 0,
     fontSize: '13px',
     color: '#374151',
+  },
+  adminReplyBox: {
+    marginTop: '8px',
+    padding: '8px 10px',
+    borderRadius: '10px',
+    background: '#eff6ff',
+    border: '1px solid #bfdbfe',
+  },
+  adminReplyHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '4px',
+  },
+  adminReplyLabel: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: '#1d4ed8',
+  },
+  adminReplyBy: {
+    fontSize: '11px',
+    color: '#6b7280',
+  },
+  adminReplyBody: {
+    margin: 0,
+    fontSize: '13px',
+    color: '#1f2937',
   },
   noReviewsText: {
     fontSize: '13px',

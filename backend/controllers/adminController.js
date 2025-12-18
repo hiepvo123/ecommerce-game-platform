@@ -141,6 +141,26 @@ module.exports = {
   },
 
   /**
+   * Get recent reviews (for dashboard)
+   * GET /api/admin/reviews/recent
+   */
+  getRecentReviews: async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit, 10) : 5;
+      const reviews = await queries.reviews.getAdminReviews({
+        limit,
+        offset: 0,
+        sortBy: 'review_at',
+        order: 'DESC',
+      });
+      return sendSuccess(res, reviews, 'Recent reviews retrieved');
+    } catch (error) {
+      console.error('Get recent reviews error:', error);
+      return sendError(res, 'Failed to load recent reviews', 'INTERNAL_ERROR', 500);
+    }
+  },
+
+  /**
    * Get all orders (for admin)
    * GET /api/admin/orders
    */
@@ -192,7 +212,7 @@ module.exports = {
       const options = {
         limit: limit ? parseInt(limit, 10) : undefined,
         offset: offset ? parseInt(offset, 10) : undefined,
-        sortBy: sortBy || 'created_at',
+        sortBy: sortBy || 'id',
         order: order || 'DESC',
       };
       const users = await queries.users.getAllUsers(options);
@@ -200,6 +220,81 @@ module.exports = {
     } catch (error) {
       console.error('Get all users error:', error);
       return sendError(res, 'Failed to load users', 'INTERNAL_ERROR', 500);
+    }
+  },
+
+  /**
+   * Get all reviews (for admin)
+   * GET /api/admin/reviews
+   */
+  getAllReviews: async (req, res) => {
+    try {
+      const {
+        limit,
+        offset,
+        sortBy,
+        order,
+        q,
+        appId,
+        userId,
+        isRecommended,
+        hasReply,
+      } = req.query;
+
+      const options = {
+        limit: limit ? parseInt(limit, 10) : undefined,
+        offset: offset ? parseInt(offset, 10) : undefined,
+        sortBy: sortBy || 'review_at',
+        order: (order || 'DESC').toUpperCase(),
+        gameId: appId ? parseInt(appId, 10) : undefined,
+        userId: userId ? parseInt(userId, 10) : undefined,
+        isRecommended:
+          typeof isRecommended === 'string'
+            ? isRecommended === 'true'
+            : undefined,
+        hasReply,
+        q,
+      };
+
+      const reviews = await queries.reviews.getAdminReviews(options);
+      return sendSuccess(res, { reviews }, 'All reviews retrieved successfully');
+    } catch (error) {
+      console.error('Get all reviews error:', error);
+      return sendError(res, 'Failed to load reviews', 'INTERNAL_ERROR', 500);
+    }
+  },
+
+  /**
+   * Create or update admin reply for a review
+   * PUT /api/admin/reviews/:id/reply
+   */
+  replyToReview: async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id, 10);
+      if (Number.isNaN(reviewId)) {
+        return sendError(res, 'Invalid review ID', 'VALIDATION_ERROR', 400);
+      }
+
+      const { replyText } = req.body;
+      if (!replyText || !replyText.trim()) {
+        return sendError(res, 'Reply text is required', 'VALIDATION_ERROR', 400);
+      }
+
+      const adminUser = req.user || req.session.user;
+      if (!adminUser || adminUser.role !== 'admin') {
+        return sendError(res, 'Admin authentication required', 'UNAUTHENTICATED', 401);
+      }
+
+      const reply = await queries.reviews.upsertReviewReply(
+        reviewId,
+        adminUser.id,
+        replyText.trim()
+      );
+
+      return sendSuccess(res, { reply }, 'Reply saved successfully');
+    } catch (error) {
+      console.error('Reply to review error:', error);
+      return sendError(res, 'Failed to save reply', 'INTERNAL_ERROR', 500);
     }
   },
 
