@@ -816,6 +816,70 @@ const gamesQueries = {
   },
 };
 
+// Helper to resolve or create entities (publishers / developers) by name
+const ensureEntitiesByName = async (table, names) => {
+  if (!Array.isArray(names) || names.length === 0) return [];
+
+  const ids = [];
+  const seen = new Set();
+
+  for (const raw of names) {
+    const name = (raw || '').trim();
+    if (!name) continue;
+
+    // Avoid processing duplicates in the same payload
+    const lower = name.toLowerCase();
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+
+    // Try to find existing entity (case-insensitive)
+    const existing = await client.query(
+      `SELECT id FROM ${table} WHERE LOWER(name) = LOWER($1) LIMIT 1`,
+      [name]
+    );
+
+    if (existing.rows.length > 0) {
+      ids.push(existing.rows[0].id);
+      continue;
+    }
+
+    // Create new record
+    const inserted = await client.query(
+      `INSERT INTO ${table} (name) VALUES ($1) RETURNING id`,
+      [name]
+    );
+    ids.push(inserted.rows[0].id);
+  }
+
+  return ids;
+};
+
+// Normalize relation array: accept numeric IDs OR names
+const normalizeRelationIds = async (table, values) => {
+  if (!Array.isArray(values) || values.length === 0) return [];
+
+  const numericIds = [];
+  const nameCandidates = [];
+
+  for (const v of values) {
+    if (v === null || v === undefined) continue;
+    const num = Number(v);
+    if (!Number.isNaN(num)) {
+      numericIds.push(num);
+    } else {
+      nameCandidates.push(String(v));
+    }
+  }
+
+  // If there are name candidates, resolve/create them
+  if (nameCandidates.length > 0) {
+    const createdIds = await ensureEntitiesByName(table, nameCandidates);
+    numericIds.push(...createdIds);
+  }
+
+  return numericIds;
+};
+
 // Create a new game with full details (transactional)
 const createGameFull = async (data) => {
   try {
@@ -835,9 +899,9 @@ const createGameFull = async (data) => {
         data.price_final,
         data.discount_percent || 0,
         data.release_date,
-        data.platforms.includes('windows'),
-        data.platforms.includes('mac'),
-        data.platforms.includes('linux')
+        Array.isArray(data.platforms) && data.platforms.includes('windows'),
+        Array.isArray(data.platforms) && data.platforms.includes('mac'),
+        Array.isArray(data.platforms) && data.platforms.includes('linux')
       ]
     );
 
@@ -871,11 +935,15 @@ const createGameFull = async (data) => {
       }
     };
 
-    await insertRelations('game_publishers', 'publisher_id', data.publishers);
-    await insertRelations('game_developers', 'developer_id', data.developers);
-    await insertRelations('game_categories', 'category_id', data.categories);
-    await insertRelations('game_genres', 'genre_id', data.genres);
-    await insertRelations('game_languages', 'language_id', data.languages);
+    // Resolve / create publishers & developers by name or ID
+    const publisherIds = await normalizeRelationIds('publishers', data.publishers || data.publisherNames || []);
+    const developerIds = await normalizeRelationIds('developers', data.developers || data.developerNames || []);
+
+    await insertRelations('game_publishers', 'publisher_id', publisherIds);
+    await insertRelations('game_developers', 'developer_id', developerIds);
+    await insertRelations('game_categories', 'category_id', Array.isArray(data.categories) ? data.categories : []);
+    await insertRelations('game_genres', 'genre_id', Array.isArray(data.genres) ? data.genres : []);
+    await insertRelations('game_languages', 'language_id', Array.isArray(data.languages) ? data.languages : []);
 
     // 4️⃣ Insert specs
     const s = data.specs;

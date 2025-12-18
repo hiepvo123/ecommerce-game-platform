@@ -372,6 +372,81 @@ const getNewestGames = async (req, res) => {
   }
 };
 
+/**
+ * Get reviews for a specific game
+ * GET /api/games/:appId/reviews
+ */
+const getGameReviews = async (req, res) => {
+  try {
+    const appId = parseInt(req.params.appId, 10);
+    if (Number.isNaN(appId)) {
+      return sendError(res, 'Invalid game ID', 'VALIDATION_ERROR', 400);
+    }
+
+    const { limit = 20, offset = 0, sortBy = 'id', order = 'DESC' } = req.query;
+
+    const reviews = await queries.reviews.getReviewsByGame(appId, {
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      sortBy,
+      order: String(order || 'DESC').toUpperCase(),
+    });
+
+    // Optional: include basic stats if available
+    let stats = null;
+    try {
+      stats = await queries.reviews.getReviewStats(appId);
+    } catch (e) {
+      // stats are optional; ignore errors
+    }
+
+    return sendSuccess(
+      res,
+      {
+        reviews,
+        count: Array.isArray(reviews) ? reviews.length : 0,
+        limit: parseInt(limit, 10),
+        offset: parseInt(offset, 10),
+        stats,
+      },
+      'Game reviews retrieved successfully'
+    );
+  } catch (error) {
+    console.error('Get game reviews error:', error);
+    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  }
+};
+
+/**
+ * Get the current user's review for a specific game
+ * GET /api/games/:appId/review/me
+ * Requires authentication (middleware)
+ */
+const getMyGameReview = async (req, res) => {
+  try {
+    const appId = parseInt(req.params.appId, 10);
+    if (Number.isNaN(appId)) {
+      return sendError(res, 'Invalid game ID', 'VALIDATION_ERROR', 400);
+    }
+
+    const userId = req.user && req.user.id;
+    if (!userId) {
+      return sendError(res, 'Not authenticated', 'NOT_AUTHENTICATED', 401);
+    }
+
+    const review = await queries.reviews.getReviewByUserAndGame(userId, appId);
+
+    return sendSuccess(
+      res,
+      { review: review || null },
+      'User review retrieved successfully'
+    );
+  } catch (error) {
+    console.error('Get my game review error:', error);
+    return sendError(res, 'Internal server error', 'INTERNAL_ERROR', 500);
+  }
+};
+
 module.exports = {
   searchGamesAutocomplete,
   getRecommendedGames,
@@ -383,5 +458,7 @@ module.exports = {
   getGamesByCategory,
   getDiscountedGames,
   getNewestGames,
+   getGameReviews,
+   getMyGameReview,
 };
 

@@ -209,14 +209,62 @@ module.exports = {
    */
   getAllGames: async (req, res) => {
     try {
-      const { limit, offset, sortBy, order } = req.query;
+      const {
+        limit,
+        offset,
+        sortBy,
+        order,
+        platform,
+        minPrice,
+        maxPrice,
+        hasDiscount,
+        languageId,
+        genreId,
+        categoryId,
+        q,
+      } = req.query;
+
       const options = {
         limit: limit ? parseInt(limit, 10) : undefined,
         offset: offset ? parseInt(offset, 10) : undefined,
-        sortBy: sortBy || 'name',
-        order: order || 'ASC',
+        sortBy: sortBy || (q ? 'relevance' : 'name'),
+        order: (order || (q ? 'DESC' : 'ASC')).toUpperCase(),
       };
-      const games = await queries.games.getAllGames(options);
+
+      let games;
+
+      if (q && q.trim() !== '') {
+        // Full-text search by name/description
+        games = await queries.games.searchGames(q.trim(), options);
+      } else if (genreId) {
+        // Filter by single genre (optional language)
+        const genre = parseInt(genreId, 10);
+        games = await queries.games.getGamesByGenre(genre, {
+          ...options,
+          languageId: languageId || undefined,
+          // Admin should see all games, no excludeOwnedUserId
+          excludeOwnedUserId: undefined,
+        });
+      } else if (categoryId) {
+        // Filter by single category (optional language)
+        const category = parseInt(categoryId, 10);
+        games = await queries.games.getGamesByCategory(category, {
+          ...options,
+          languageId: languageId || undefined,
+          excludeOwnedUserId: undefined,
+        });
+      } else {
+        // Base listing with platform/price/discount/language filters
+        const filters = {};
+        if (platform) filters.platform = platform;
+        if (minPrice) filters.minPrice = parseFloat(minPrice);
+        if (maxPrice) filters.maxPrice = parseFloat(maxPrice);
+        if (hasDiscount === 'true') filters.hasDiscount = true;
+        if (languageId) filters.languageId = languageId;
+
+        games = await queries.games.getGamesByFilter(filters, options);
+      }
+
       return sendSuccess(res, { games }, 'All games retrieved successfully');
     } catch (error) {
       console.error('Get all games error:', error);

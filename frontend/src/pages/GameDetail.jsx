@@ -5,6 +5,7 @@ import { gameService } from '../services/gameService';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const GameDetail = () => {
   const { appId } = useParams();
@@ -17,6 +18,14 @@ const GameDetail = () => {
   const { addToCart } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState(null);
+  const [myReview, setMyReview] = useState(null);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRecommended, setReviewRecommended] = useState(true);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState('');
 
   const formatPrice = (val) => {
     if (val === null || val === undefined || val === '') return '';
@@ -88,6 +97,74 @@ const GameDetail = () => {
     };
   }, [appId]);
 
+  // Load reviews and the current user's review once game is loaded
+  useEffect(() => {
+    if (!game || !game.app_id) return;
+
+    let cancelled = false;
+
+    const fetchReviews = async () => {
+      try {
+        const res = await api.get(`/games/${game.app_id}/reviews`, {
+          params: { limit: 20, offset: 0, sortBy: 'id', order: 'DESC' },
+        });
+        const payload = res?.data;
+        const list = payload?.data?.reviews || payload?.reviews || [];
+        const stats = payload?.data?.stats || payload?.stats || null;
+        if (!cancelled) {
+          setReviews(Array.isArray(list) ? list : []);
+          setReviewStats(stats);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Fetch game reviews error:', err);
+        }
+      }
+    };
+
+    const fetchMyReview = async () => {
+      if (!isAuthenticated) {
+        setMyReview(null);
+        setReviewText('');
+        setReviewRecommended(true);
+        return;
+      }
+      try {
+        const res = await api.get(`/games/${game.app_id}/review/me`);
+        const payload = res?.data;
+        const review = payload?.data?.review || payload?.review || null;
+        if (!cancelled) {
+          if (review) {
+            setMyReview(review);
+            setReviewText(review.review_text || '');
+            setReviewRecommended(Boolean(review.is_recommended));
+          } else {
+            setMyReview(null);
+            setReviewText('');
+            setReviewRecommended(true);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (err.response && err.response.status === 404) {
+            setMyReview(null);
+            setReviewText('');
+            setReviewRecommended(true);
+          } else {
+            console.error('Fetch my review error:', err);
+          }
+        }
+      }
+    };
+
+    fetchReviews();
+    fetchMyReview();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [game, isAuthenticated]);
+
   const sanitizeText = (text) => {
     if (!text) return '';
     return String(text).replace(/[\[\]'"]/g, '').trim();
@@ -99,6 +176,31 @@ const GameDetail = () => {
     const str = sanitizeText(val);
     if (str.includes(',')) return str.split(',').map((s) => s.trim()).filter(Boolean);
     return [str].filter(Boolean);
+  };
+
+  // Strip HTML tags to get plain text length (regex-based, safe for React)
+  const stripHtml = (html) => {
+    if (!html) return '';
+    const str = String(html);
+    // Remove HTML tags
+    let text = str.replace(/<[^>]*>/g, '');
+    // Decode common HTML entities
+    text = text
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    return text.trim();
+  };
+
+  // Get plain text version of description for length calculation
+  const getPlainTextLength = (text) => {
+    if (!text) return 0;
+    const plain = stripHtml(String(text));
+    return plain.length;
   };
 
   const description =
@@ -201,12 +303,80 @@ const GameDetail = () => {
     }
   };
 
-  const previewDescription = useMemo(() => {
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!game?.app_id) return;
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    setReviewError('');
+    setReviewSuccess('');
+
+    try {
+      setReviewLoading(true);
+      const res = await api.post('/library/review', {
+        appId: game.app_id,
+        isRecommended: reviewRecommended,
+        reviewText: reviewText.trim(),
+      });
+
+      const payload = res?.data;
+      const review = payload?.data?.review || payload?.review || payload?.data || null;
+
+      if (review) {
+        setMyReview(review);
+        // Update local reviews list: put/update this review at the top
+        setReviews((prev) => {
+          const withoutMine = (prev || []).filter(
+            (r) => !(r.user_id === review.user_id && r.app_id === review.app_id)
+          );
+          return [review, ...withoutMine];
+        });
+      }
+
+      setReviewSuccess(
+        myReview ? 'Review updated successfully.' : 'Review created successfully.'
+      );
+    } catch (err) {
+      console.error('Submit review error:', err);
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to submit review';
+      setReviewError(msg);
+    } finally {
+      setReviewLoading(false);
+      setTimeout(() => {
+        setReviewError('');
+        setReviewSuccess('');
+      }, 4000);
+    }
+  };
+
+  // Get plain text version for display
+  const plainDescription = useMemo(() => {
     if (!description) return '';
-    if (showFullDescription) return description;
-    if (description.length <= 700) return description;
-    return `${description.slice(0, 700)}...`;
-  }, [description, showFullDescription]);
+    return stripHtml(String(description));
+  }, [description]);
+
+  const descriptionLength = useMemo(() => {
+    return getPlainTextLength(description);
+  }, [description]);
+
+  const previewDescription = useMemo(() => {
+    if (!plainDescription) return '';
+    if (showFullDescription) return plainDescription;
+    if (descriptionLength <= 700) return plainDescription;
+    // Truncate at word boundary near 700 chars
+    const truncated = plainDescription.slice(0, 700);
+    const lastSpace = truncated.lastIndexOf(' ');
+    const cutPoint = lastSpace > 650 ? lastSpace : 700;
+    return `${plainDescription.slice(0, cutPoint)}...`;
+  }, [plainDescription, descriptionLength, showFullDescription]);
 
   const languagesDisplay = useMemo(() => {
     if (!supportedLangs.length) return { primary: [], more: 0, list: [] };
@@ -320,7 +490,7 @@ const GameDetail = () => {
                 <div style={styles.aboutCol}>
                   <h2 style={styles.sectionTitle}>About this game</h2>
                   <p style={styles.description}>{previewDescription}</p>
-                  {description.length > 700 && (
+                  {descriptionLength > 700 && (
                     <button style={styles.readMore} onClick={() => setShowFullDescription((s) => !s)}>
                       {showFullDescription ? 'Show less' : 'Read more'}
                     </button>
@@ -434,6 +604,123 @@ const GameDetail = () => {
                   </div>
                 </section>
               )}
+
+              <section style={styles.reviewsSection}>
+                <h2 style={styles.sectionTitle}>Player Reviews</h2>
+
+                {/* Review form */}
+                {isAuthenticated ? (
+                  <form onSubmit={handleSubmitReview} style={styles.reviewForm}>
+                    <div style={styles.reviewToggleRow}>
+                      <span style={styles.reviewLabel}>Your recommendation:</span>
+                      <div style={styles.toggleGroup}>
+                        <button
+                          type="button"
+                          style={{
+                            ...styles.toggleButton,
+                            ...(reviewRecommended ? styles.toggleButtonActive : {}),
+                          }}
+                          onClick={() => setReviewRecommended(true)}
+                        >
+                          Recommend
+                        </button>
+                        <button
+                          type="button"
+                          style={{
+                            ...styles.toggleButton,
+                            ...(!reviewRecommended ? styles.toggleButtonActive : {}),
+                          }}
+                          onClick={() => setReviewRecommended(false)}
+                        >
+                          Not Recommended
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      style={styles.reviewTextarea}
+                      rows={4}
+                      placeholder="Share your thoughts about this game..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                    />
+
+                    <button
+                      type="submit"
+                      style={styles.reviewSubmit}
+                      disabled={reviewLoading}
+                    >
+                      {reviewLoading
+                        ? 'Saving...'
+                        : myReview
+                        ? 'Update Review'
+                        : 'Submit Review'}
+                    </button>
+
+                    {reviewError && <div style={styles.errorMessage}>{reviewError}</div>}
+                    {reviewSuccess && (
+                      <div style={styles.successMessage}>{reviewSuccess}</div>
+                    )}
+                  </form>
+                ) : (
+                  <div style={styles.reviewMessageRow}>
+                    <span>Log in to write a review.</span>
+                    <button
+                      style={styles.loginInlineButton}
+                      onClick={() => navigate('/login')}
+                    >
+                      Login
+                    </button>
+                  </div>
+                )}
+
+                {/* Review stats (optional) */}
+                {reviewStats && (
+                  <div style={styles.reviewStatsRow}>
+                    <span>
+                      {`Total reviews: ${reviewStats.total_reviews || 0}`}
+                    </span>
+                    {typeof reviewStats.recommendation_percentage === 'number' && (
+                      <span>
+                        {`Recommendation rate: ${reviewStats.recommendation_percentage}%`}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Reviews list */}
+                {reviews && reviews.length > 0 ? (
+                  <div style={styles.reviewList}>
+                    {reviews.map((r) => (
+                      <div key={r.id} style={styles.reviewCard}>
+                        <div style={styles.reviewHeader}>
+                          <span style={styles.reviewUser}>
+                            {r.username || 'User'}
+                          </span>
+                          <span
+                            style={{
+                              ...styles.reviewBadge,
+                              backgroundColor: r.is_recommended
+                                ? '#dcfce7'
+                                : '#fee2e2',
+                              color: r.is_recommended ? '#166534' : '#b91c1c',
+                            }}
+                          >
+                            {r.is_recommended ? 'Recommended' : 'Not Recommended'}
+                          </span>
+                        </div>
+                        {r.review_text && (
+                          <p style={styles.reviewBody}>{r.review_text}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={styles.noReviewsText}>
+                    No reviews yet. Be the first to review this game.
+                  </p>
+                )}
+              </section>
             </>
           )}
         </div>
@@ -740,5 +1027,131 @@ const styles = {
     background: '#fee2e2',
     color: '#dc2626',
     fontWeight: '600',
+  },
+  reviewsSection: {
+    marginTop: '14px',
+    background: '#fff',
+    borderRadius: '16px',
+    padding: '16px',
+    boxShadow: '0 10px 24px rgba(15,23,42,0.12)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  reviewForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  reviewToggleRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+  reviewLabel: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#4b5563',
+  },
+  toggleGroup: {
+    display: 'flex',
+    gap: '8px',
+  },
+  toggleButton: {
+    padding: '6px 10px',
+    borderRadius: '999px',
+    border: '1px solid #d1d5db',
+    background: '#fff',
+    color: '#374151',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  toggleButtonActive: {
+    background: '#dcfce7',
+    borderColor: '#16a34a',
+    color: '#166534',
+  },
+  reviewTextarea: {
+    width: '100%',
+    minHeight: '80px',
+    padding: '10px',
+    borderRadius: '10px',
+    border: '1px solid #d1d5db',
+    resize: 'vertical',
+    fontFamily: 'inherit',
+    fontSize: '14px',
+  },
+  reviewSubmit: {
+    alignSelf: 'flex-end',
+    padding: '8px 16px',
+    borderRadius: '999px',
+    border: 'none',
+    background: '#3b82f6',
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  reviewMessageRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: '13px',
+    color: '#4b5563',
+  },
+  loginInlineButton: {
+    border: 'none',
+    background: 'transparent',
+    color: '#2563eb',
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: '13px',
+  },
+  reviewStatsRow: {
+    display: 'flex',
+    gap: '12px',
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+  reviewList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    marginTop: '4px',
+  },
+  reviewCard: {
+    padding: '10px',
+    borderRadius: '10px',
+    background: '#f9fafb',
+    border: '1px solid #e5e7eb',
+  },
+  reviewHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '4px',
+  },
+  reviewUser: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#111827',
+  },
+  reviewBadge: {
+    fontSize: '11px',
+    padding: '4px 8px',
+    borderRadius: '999px',
+    fontWeight: 700,
+  },
+  reviewBody: {
+    margin: 0,
+    fontSize: '13px',
+    color: '#374151',
+  },
+  noReviewsText: {
+    fontSize: '13px',
+    color: '#6b7280',
   },
 };

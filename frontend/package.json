@@ -23,6 +23,7 @@
     "react-router-dom": "6.28.0"
   },
   "devDependencies": {
+    "eslint-plugin-react-hooks": "^7.0.1",
     "react-scripts": "5.0.1"
   },
   "browserslist": {

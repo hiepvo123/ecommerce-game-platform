@@ -6,24 +6,112 @@ const overlayStyle = {
   left: 0,
   right: 0,
   bottom: 0,
-  background: 'rgba(0,0,0,0.4)',
+  background: 'rgba(15,23,42,0.55)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   zIndex: 1000,
+  backdropFilter: 'blur(3px)',
 };
 
 const modalStyle = {
-  background: '#fff',
-  padding: '24px',
-  borderRadius: '12px',
-  width: '700px',
-  maxHeight: '85vh',
+  background: '#ffffff',
+  padding: '24px 28px 28px',
+  borderRadius: '16px',
+  width: '720px',
+  maxWidth: '95vw',
+  maxHeight: '90vh',
   overflowY: 'auto',
+  boxShadow: '0 18px 45px rgba(15,23,42,0.16)',
+  border: '1px solid #e2e8f0',
+};
+
+const headerStyle = {
+  marginBottom: '16px',
+  paddingBottom: '12px',
+  borderBottom: '1px solid #e2e8f0',
+};
+
+const titleStyle = {
+  margin: 0,
+  fontSize: '20px',
+  fontWeight: 700,
+  color: '#0f172a',
+};
+
+const subtitleStyle = {
+  margin: '4px 0 0',
+  fontSize: '13px',
+  color: '#64748b',
 };
 
 const sectionStyle = {
   marginBottom: '16px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+  fontSize: '14px',
+};
+
+const labelStyle = {
+  fontWeight: 600,
+  color: '#0f172a',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '9px 10px',
+  borderRadius: '10px',
+  border: '1px solid #e2e8f0',
+  fontSize: '14px',
+  background: '#f8fafc',
+};
+
+const textareaStyle = {
+  width: '100%',
+  padding: '9px 10px',
+  borderRadius: '10px',
+  border: '1px solid #e2e8f0',
+  fontSize: '14px',
+  minHeight: '120px',
+  background: '#f8fafc',
+  resize: 'vertical',
+};
+
+const pillCheckboxLabelStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '4px 10px',
+  borderRadius: '999px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  fontSize: '13px',
+  color: '#334155',
+  marginRight: '8px',
+  marginBottom: '8px',
+};
+
+const primaryButtonStyle = {
+  padding: '9px 18px',
+  borderRadius: '999px',
+  border: 'none',
+  background: '#2563eb',
+  color: '#ffffff',
+  fontWeight: 600,
+  fontSize: '14px',
+  cursor: 'pointer',
+};
+
+const secondaryButtonStyle = {
+  padding: '9px 16px',
+  borderRadius: '999px',
+  border: '1px solid #cbd5f5',
+  background: '#ffffff',
+  color: '#0f172a',
+  fontWeight: 500,
+  fontSize: '14px',
+  cursor: 'pointer',
 };
 
 const EditGameModal = ({ game, onClose, onSave }) => {
@@ -149,63 +237,69 @@ const EditGameModal = ({ game, onClose, onSave }) => {
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <h2>Edit Game #{game.app_id}</h2>
+        <div style={headerStyle}>
+          <h2 style={titleStyle}>Edit Game #{game.app_id}</h2>
+          <p style={subtitleStyle}>
+            Adjust pricing, platforms, imagery and genres for this game.
+          </p>
+        </div>
 
         {/* Basic Info */}
         <div style={sectionStyle}>
-          <label>Game Name</label>
+          <label style={labelStyle}>Game Name</label>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
-            style={{ width: '100%' }}
+            style={inputStyle}
           />
         </div>
 
         <div style={sectionStyle}>
-          <label>Price</label>
+          <label style={labelStyle}>Price</label>
           <input
             type="number"
             name="price_final"
             value={form.price_final}
             onChange={handleChange}
-            style={{ width: '100%' }}
+            style={inputStyle}
           />
         </div>
 
         <div style={sectionStyle}>
-          <label>Discount (%)</label>
+          <label style={labelStyle}>Discount (%)</label>
           <input
             type="number"
             name="discount_percent"
             value={form.discount_percent}
             onChange={handleChange}
-            style={{ width: '100%' }}
+            style={inputStyle}
           />
         </div>
 
         <div style={sectionStyle}>
-          <label>Release Date</label>
+          <label style={labelStyle}>Release Date</label>
           <input
             type="date"
             name="release_date"
             value={form.release_date}
             onChange={handleChange}
+            style={inputStyle}
           />
         </div>
 
         {/* Platforms */}
         <div style={sectionStyle}>
-          <label>Platforms</label>
-          <div>
+          <label style={labelStyle}>Platforms</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {['windows', 'mac', 'linux'].map(p => (
-              <label key={p} style={{ marginRight: 12 }}>
+              <label key={p} style={pillCheckboxLabelStyle}>
                 <input
                   type="checkbox"
                   checked={form.platforms.includes(p)}
                   onChange={() => togglePlatform(p)}
-                />{' '}
-                {p}
+                />
+                <span>{p}</span>
               </label>
             ))}
           </div>
@@ -213,37 +307,37 @@ const EditGameModal = ({ game, onClose, onSave }) => {
 
         {/* Images */}
         <div style={sectionStyle}>
-          <label>Header Image URL</label>
+          <label style={labelStyle}>Header Image URL</label>
           <input
             name="header_image"
             value={form.header_image}
             onChange={handleChange}
-            style={{ width: '100%' }}
+            style={inputStyle}
           />
         </div>
 
         <div style={sectionStyle}>
-          <label>Background Image URL</label>
+          <label style={labelStyle}>Background Image URL</label>
           <input
             name="background"
             value={form.background}
             onChange={handleChange}
-            style={{ width: '100%' }}
+            style={inputStyle}
           />
         </div>
 
         {/* Genres */}
         <div style={sectionStyle}>
-          <label>Genres</label>
+          <label style={labelStyle}>Genres</label>
           <div>
             {allGenres.map(g => (
-              <label key={g.id} style={{ display: 'inline-block', marginRight: 12 }}>
+              <label key={g.id} style={pillCheckboxLabelStyle}>
                 <input
                   type="checkbox"
                   checked={form.genres.includes(g.id)}
                   onChange={() => toggleGenre(g.id)}
-                />{' '}
-                {g.name}
+                />
+                <span>{g.name}</span>
               </label>
             ))}
           </div>
@@ -251,20 +345,24 @@ const EditGameModal = ({ game, onClose, onSave }) => {
 
         {/* Description */}
         <div style={sectionStyle}>
-          <label>Description</label>
+          <label style={labelStyle}>Description</label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
             rows={4}
-            style={{ width: '100%' }}
+            style={textareaStyle}
           />
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          <button onClick={onClose}>Cancel</button>
-          <button onClick={handleSubmit}>Save</button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+          <button type="button" onClick={onClose} style={secondaryButtonStyle}>
+            Cancel
+          </button>
+          <button type="button" onClick={handleSubmit} style={primaryButtonStyle}>
+            Save
+          </button>
         </div>
       </div>
     </div>

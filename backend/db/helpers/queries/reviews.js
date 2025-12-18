@@ -43,6 +43,17 @@ const reviewsQueries = {
   },
 
   /**
+   * Get review for a specific user and game
+   * @param {number} userId - User ID
+   * @param {number} appId - Game app_id
+   * @returns {Promise<Object|null>} Review object or null
+   */
+  getReviewByUserAndGame: async (userId, appId) => {
+    const queryText = 'SELECT * FROM reviews WHERE user_id = $1 AND app_id = $2';
+    return await queryOne(queryText, [userId, appId]);
+  },
+
+  /**
    * Get user reviews
    * @param {number} userId - User ID
    * @param {Object} options - Query options
@@ -77,8 +88,11 @@ const reviewsQueries = {
   createReview: async (reviewData) => {
     const { user_id, app_id, review_text, is_recommended } = reviewData;
     const queryText = `
-      INSERT INTO reviews (user_id, app_id, review_text, is_recommended)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO reviews (id, user_id, app_id, review_text, is_recommended)
+      VALUES (
+        (SELECT COALESCE(MAX(id), 0) + 1 FROM reviews),
+        $1, $2, $3, $4
+      )
       RETURNING *
     `;
     return await queryOne(queryText, [user_id, app_id, review_text, is_recommended]);
