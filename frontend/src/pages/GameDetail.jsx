@@ -336,7 +336,7 @@ const GameDetail = () => {
         await removeFromWishlist(game.app_id);
         setWishlistMessage('Removed from wishlist');
       } else {
-        await addToWishlist(game);
+        await addToWishlist(game.app_id);
         setWishlistMessage('Added to wishlist!');
       }
       setTimeout(() => setWishlistMessage(''), 3000);
