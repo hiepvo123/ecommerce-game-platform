@@ -80,24 +80,18 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const checkout = async ({ couponCode, billingAddressId } = {}) => {
+  const checkout = async ({ couponCode, billingAddressId, appIds } = {}) => {
     try {
       const response = await cartService.checkout({
         couponCode: couponCode || null,
         billingAddressId: billingAddressId || null,
+        appIds: Array.isArray(appIds) ? appIds : null,
       });
 
       const order = response.data?.order || response.order || response.data;
 
-      // Backend clears cart; mirror that here
-      setCart({
-        cart: {
-          id: null,
-          total_price: 0,
-          items: [],
-        },
-      });
-      setCartCount(0);
+      await fetchCart();
+      await fetchCartCount();
 
       return order;
     } catch (error) {

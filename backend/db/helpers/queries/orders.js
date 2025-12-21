@@ -116,6 +116,44 @@ const ordersQueries = {
   },
 
   /**
+   * Get user orders with items (for list display)
+   * @param {number} userId - User ID
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} Array of orders with items
+   */
+  getUserOrdersWithItems: async (userId, options = {}) => {
+    const { limit, offset, sortBy = 'created_at', order = 'DESC' } = options;
+    const orderBy = String(sortBy || '').includes('.') ? sortBy : `o.${sortBy}`;
+    const orderClause = buildOrderClause(orderBy, order);
+    const paginationClause = buildPaginationClause(limit, offset);
+
+    const queryText = `
+      SELECT
+        o.*,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'app_id', oi.app_id,
+              'name', g.name,
+              'header_image', gd.header_image
+            )
+          ) FILTER (WHERE oi.id IS NOT NULL),
+          '[]'::json
+        ) AS items
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN games g ON oi.app_id = g.app_id
+      LEFT JOIN game_descriptions gd ON g.app_id = gd.app_id
+      WHERE o.user_id = $1
+      GROUP BY o.id
+      ${orderClause}
+      ${paginationClause}
+    `.trim();
+
+    return await query(queryText, [userId]);
+  },
+
+  /**
    * Create order from cart
    * @param {number} userId - User ID
    * @param {Object} orderData - Order data
@@ -132,13 +170,32 @@ const ordersQueries = {
         throw new Error('Cart not found');
       }
 
-      // Get cart items
-      const itemsQuery = 'SELECT * FROM cart_items WHERE cart_id = $1';
-      const itemsResult = await client.query(itemsQuery, [cart.id]);
+      const selectedAppIds = Array.isArray(orderData.app_ids)
+        ? orderData.app_ids
+            .map((id) => parseInt(id, 10))
+            .filter((id) => Number.isFinite(id))
+        : null;
+      const hasSelection = selectedAppIds && selectedAppIds.length > 0;
+
+      // Get cart items (optionally filtered)
+      const itemsQuery = hasSelection
+        ? 'SELECT * FROM cart_items WHERE cart_id = $1 AND app_id = ANY($2)'
+        : 'SELECT * FROM cart_items WHERE cart_id = $1';
+      const itemsResult = hasSelection
+        ? await client.query(itemsQuery, [cart.id, selectedAppIds])
+        : await client.query(itemsQuery, [cart.id]);
       const items = itemsResult.rows;
 
       if (items.length === 0) {
-        throw new Error('Cart is empty');
+        throw new Error(hasSelection ? 'CART_SELECTION_EMPTY' : 'Cart is empty');
+      }
+
+      if (hasSelection) {
+        const foundIds = new Set(items.map((item) => item.app_id));
+        const missing = selectedAppIds.filter((id) => !foundIds.has(id));
+        if (missing.length > 0) {
+          throw new Error('CART_SELECTION_INVALID');
+        }
       }
 
       // Get game prices
@@ -247,9 +304,28 @@ const ordersQueries = {
         await client.query(itemQuery, [order.id, item.app_id, item.unit_price_paid, item.discount_percent_applied]);
       }
 
-      // Clear cart
-      await client.query('DELETE FROM cart_items WHERE cart_id = $1', [cart.id]);
-      await client.query('UPDATE carts SET total_price = 0 WHERE id = $1', [cart.id]);
+      // Clear selected items from cart (or all if no selection)
+      if (hasSelection) {
+        await client.query(
+          'DELETE FROM cart_items WHERE cart_id = $1 AND app_id = ANY($2)',
+          [cart.id, selectedAppIds]
+        );
+      } else {
+        await client.query('DELETE FROM cart_items WHERE cart_id = $1', [cart.id]);
+      }
+      await client.query(
+        `
+          UPDATE carts
+          SET total_price = (
+            SELECT COALESCE(SUM(g.price_final), 0)
+            FROM cart_items ci
+            INNER JOIN games g ON ci.app_id = g.app_id
+            WHERE ci.cart_id = $1
+          )
+          WHERE id = $1
+        `,
+        [cart.id]
+      );
 
       return order;
     });

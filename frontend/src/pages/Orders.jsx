@@ -36,6 +36,20 @@ const Orders = () => {
     return `$${num.toFixed(2)}`;
   };
 
+  const normalizeItems = (items) => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items;
+    if (typeof items === 'string') {
+      try {
+        const parsed = JSON.parse(items);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        return [];
+      }
+    }
+    return [];
+  };
+
   return (
     <>
       <Navbar />
@@ -53,6 +67,12 @@ const Orders = () => {
           {!loading && !error && orders.length > 0 && (
             <div style={styles.list}>
               {orders.map((order) => (
+                (() => {
+                  const orderItems = normalizeItems(order.items);
+                  const maxThumbs = 4;
+                  const thumbs = orderItems.slice(0, maxThumbs);
+                  const extraCount = orderItems.length - thumbs.length;
+                  return (
                 <div
                   key={order.id}
                   style={styles.orderRow}
@@ -63,11 +83,31 @@ const Orders = () => {
                     <div style={styles.orderMeta}>
                       <span>Status: {order.order_status}</span>
                     </div>
+                    {thumbs.length > 0 && (
+                      <div style={styles.thumbsRow}>
+                        {thumbs.map((item, index) => (
+                          <img
+                            key={`${order.id}-${item.app_id || index}`}
+                            src={item.header_image || '/placeholder-game.jpg'}
+                            alt={item.name || 'Game'}
+                            style={styles.thumb}
+                            onError={(e) => {
+                              e.target.src = '/placeholder-game.jpg';
+                            }}
+                          />
+                        ))}
+                        {extraCount > 0 && (
+                          <div style={styles.thumbMore}>+{extraCount}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div style={styles.orderRight}>
                     <div style={styles.orderTotal}>{formatPrice(order.total_price)}</div>
                   </div>
                 </div>
+                  );
+                })()
               ))}
             </div>
           )}
@@ -131,6 +171,34 @@ const styles = {
   orderMeta: {
     fontSize: '0.9rem',
     color: '#6b7280',
+  },
+  thumbsRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    marginTop: '6px',
+    flexWrap: 'wrap',
+  },
+  thumb: {
+    width: '44px',
+    height: '32px',
+    objectFit: 'cover',
+    borderRadius: '6px',
+    border: '1px solid #e5e7eb',
+    background: '#f3f4f6',
+  },
+  thumbMore: {
+    width: '44px',
+    height: '32px',
+    borderRadius: '6px',
+    border: '1px dashed #d1d5db',
+    color: '#6b7280',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: '#f9fafb',
   },
   orderRight: {
     fontWeight: 700,

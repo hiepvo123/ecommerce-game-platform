@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useCart } from '../context/CartContext';
@@ -11,9 +11,25 @@ const Cart = () => {
   // Handle different cart data structures from API
   const cartData = cart?.cart || cart || {};
   const items = cartData?.items || [];
-  const totalPrice = cartData?.total_price || 0;
-
   const [couponCode, setCouponCode] = useState('');
+  const [selectedAppIds, setSelectedAppIds] = useState(new Set());
+  const [hasUserSelection, setHasUserSelection] = useState(false);
+
+  useEffect(() => {
+    setSelectedAppIds((prev) => {
+      const next = new Set();
+      if (!hasUserSelection) {
+        items.forEach((item) => next.add(item.app_id));
+        return next;
+      }
+      items.forEach((item) => {
+        if (prev.has(item.app_id)) {
+          next.add(item.app_id);
+        }
+      });
+      return next;
+    });
+  }, [items, hasUserSelection]);
 
   const handleRemove = async (appId) => {
     try {
@@ -27,6 +43,14 @@ const Cart = () => {
     if (!price) return 'Free';
     return `$${parseFloat(price).toFixed(2)}`;
   };
+
+  const selectedItems = items.filter((item) => selectedAppIds.has(item.app_id));
+  const selectedTotal = selectedItems.reduce((sum, item) => {
+    const price = Number(item.price_final);
+    return sum + (Number.isNaN(price) ? 0 : price);
+  }, 0);
+  const selectedCount = selectedItems.length;
+  const allSelected = items.length > 0 && selectedCount === items.length;
 
   return (
     <>
@@ -50,8 +74,46 @@ const Cart = () => {
         ) : (
           <div style={styles.cartContent}>
             <div style={styles.itemsSection}>
+              <div style={styles.selectAllRow}>
+                <label style={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) => {
+                      setHasUserSelection(true);
+                      setSelectedAppIds(
+                        e.target.checked
+                          ? new Set(items.map((item) => item.app_id))
+                          : new Set()
+                      );
+                    }}
+                  />
+                  <span>Select all</span>
+                </label>
+                <span style={styles.selectAllMeta}>
+                  {selectedCount}/{items.length} selected
+                </span>
+              </div>
               {items.map((item) => (
                 <div key={item.app_id} style={styles.cartItem}>
+                  <label style={styles.itemCheckbox}>
+                    <input
+                      type="checkbox"
+                      checked={selectedAppIds.has(item.app_id)}
+                      onChange={() => {
+                        setHasUserSelection(true);
+                        setSelectedAppIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(item.app_id)) {
+                            next.delete(item.app_id);
+                          } else {
+                            next.add(item.app_id);
+                          }
+                          return next;
+                        });
+                      }}
+                    />
+                  </label>
                   <div
                     style={styles.gameImage}
                     onClick={() => navigate(`/game/${item.app_id}`)}
@@ -103,8 +165,8 @@ const Cart = () => {
               <div style={styles.summaryCard}>
                 <h2 style={styles.summaryTitle}>Order Summary</h2>
                 <div style={styles.summaryRow}>
-                  <span>Items ({items.length}):</span>
-                  <span>{formatPrice(totalPrice)}</span>
+                  <span>Items ({selectedCount}/{items.length}):</span>
+                  <span>{formatPrice(selectedTotal)}</span>
                 </div>
                 <div style={{ margin: '16px 0' }}>
                   <label style={{ fontSize: '0.9rem', color: '#555' }}>Coupon code</label>
@@ -127,23 +189,27 @@ const Cart = () => {
                 <div style={styles.summaryDivider}></div>
                 <div style={styles.totalRow}>
                   <span style={styles.totalLabel}>Total:</span>
-                  <span style={styles.totalPrice}>{formatPrice(totalPrice)}</span>
+                  <span style={styles.totalPrice}>{formatPrice(selectedTotal)}</span>
                 </div>
                 <button
                   className="checkout-button"
                   style={styles.checkoutButton}
-                  disabled={items.length === 0}
+                  disabled={selectedCount === 0}
                   onClick={() => {
                     navigate('/checkout', {
                       state: {
-                        cart: { items, total_price: totalPrice },
+                        cart: { items: selectedItems, total_price: selectedTotal },
                         couponCode: couponCode.trim() || '',
+                        selectedAppIds: selectedItems.map((item) => item.app_id),
                       },
                     });
                   }}
                 >
                   Proceed to Checkout
                 </button>
+                {items.length > 0 && selectedCount === 0 && (
+                  <div style={styles.selectionNote}>Select at least one game to checkout.</div>
+                )}
               </div>
             </div>
           </div>
@@ -201,6 +267,19 @@ const styles = {
     flexDirection: 'column',
     gap: '16px',
   },
+  selectAllRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8px 12px',
+    background: '#f9fafb',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
+  },
+  selectAllMeta: {
+    fontSize: '0.9rem',
+    color: '#6b7280',
+  },
   cartItem: {
     display: 'flex',
     gap: '16px',
@@ -209,6 +288,10 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     position: 'relative',
+  },
+  itemCheckbox: {
+    display: 'flex',
+    alignItems: 'center',
   },
   gameImage: {
     width: '120px',
@@ -303,6 +386,12 @@ const styles = {
     fontSize: '0.95rem',
     color: '#666',
   },
+  selectionNote: {
+    marginTop: '10px',
+    fontSize: '0.85rem',
+    color: '#b45309',
+    textAlign: 'center',
+  },
   summaryDivider: {
     height: '1px',
     background: '#e5e5e5',
@@ -338,6 +427,13 @@ const styles = {
   },
   checkoutButtonHover: {
     background: '#2563eb',
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '0.95rem',
+    color: '#111827',
   },
 };
 

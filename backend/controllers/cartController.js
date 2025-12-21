@@ -231,7 +231,12 @@ const validateCoupon = async (req, res) => {
 const checkout = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { couponCode, billingAddressId } = req.body || {};
+    const { couponCode, billingAddressId, appIds } = req.body || {};
+    const appIdsList = Array.isArray(appIds) ? appIds : null;
+
+    if (Array.isArray(appIdsList) && appIdsList.length === 0) {
+      return sendError(res, 'Please select at least one game', 'CART_SELECTION_EMPTY', 400);
+    }
 
     try {
       // Create order as pending; payment creation now handled separately.
@@ -239,6 +244,7 @@ const checkout = async (req, res) => {
         discount_code: couponCode || null,
         billing_address_id: billingAddressId || null,
         order_status: 'pending',
+        app_ids: appIdsList,
       });
 
       // Fetch order with items for confirmation payload
@@ -252,6 +258,12 @@ const checkout = async (req, res) => {
     } catch (err) {
       if (err.message === 'Cart not found' || err.message === 'Cart is empty') {
         return sendError(res, 'Your cart is empty', 'CART_EMPTY', 400);
+      }
+      if (err.message === 'CART_SELECTION_EMPTY') {
+        return sendError(res, 'Please select at least one game', 'CART_SELECTION_EMPTY', 400);
+      }
+      if (err.message === 'CART_SELECTION_INVALID') {
+        return sendError(res, 'Some selected games are not in your cart', 'CART_SELECTION_INVALID', 400);
       }
       if (err.message === 'INVALID_COUPON') {
         return sendError(res, 'Invalid coupon code', 'INVALID_COUPON', 400);

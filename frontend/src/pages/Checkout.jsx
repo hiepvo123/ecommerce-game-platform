@@ -15,6 +15,7 @@ const Checkout = () => {
   const initialItems = cartSnapshot.items || [];
   const initialTotal = cartSnapshot.total_price || 0;
   const initialCoupon = location.state?.couponCode || '';
+  const selectedAppIds = location.state?.selectedAppIds || [];
 
   const [items] = useState(initialItems);
   const [subtotal] = useState(initialTotal);
@@ -120,9 +121,13 @@ const Checkout = () => {
       setMessage('');
 
       // 1) Create order (pending)
+      const appIdsForCheckout = selectedAppIds.length
+        ? selectedAppIds
+        : items.map((item) => item.app_id);
       const orderResponse = await checkout({
         couponCode: couponCode.trim() || null,
         billingAddressId: billingAddressId || null,
+        appIds: appIdsForCheckout,
       });
       const createdOrder =
         orderResponse?.data?.order ||

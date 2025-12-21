@@ -4,13 +4,13 @@ const queries = require('../db/helpers/queries');
 const { sendSuccess, sendError } = require('../utils/response');
 
 /**
- * Get current user's orders (list)
+ * Get current user's orders with items (list)
  * GET /api/orders
  */
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.user.id;
-    const orders = await queries.orders.getUserOrders(userId, {
+    const orders = await queries.orders.getUserOrdersWithItems(userId, {
       sortBy: 'created_at',
       order: 'DESC',
     });
