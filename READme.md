@@ -126,6 +126,50 @@ Notes:
 	- `src/components/` — shared components and UI
 	- `src/context/` — React contexts (Auth, Cart, Wishlist)
 
+## Database structure (summary)
+
+This project uses PostgreSQL. The schema is documented in `backend/db/schema.md`; below is a concise summary of the main tables, important columns and relationships to help navigation and development.
+
+- Enums
+	- `user_role` (user, admin)
+	- `order_status` (pending, paid, canceled, refunded, failed)
+	- `payment_status` (initiated, authorized, captured, failed, refunded, canceled)
+
+- Core game tables
+	- `games` — primary game table keyed by `app_id` (Steam App ID). Important columns: `name`, `release_date`, `price_final`, `price_org`, `discount_percent`, `platforms_windows/mac/linux`.
+	- `game_descriptions` — media and long descriptions (1:1 with `games` via `app_id`).
+	- `game_specs` — PC requirements (1:1 with `games`).
+
+- Reference / many-to-many tables
+	- `languages`, `developers`, `publishers`, `genres`, `categories` — master lists.
+	- `game_languages`, `game_developers`, `game_publishers`, `game_genres`, `game_categories` — link tables (many-to-many with `games`).
+
+- Users & auth
+	- `users` — core user table (`id`, `email`, `username`, `password_hash`, `role`, `is_verified`, ...).
+	- `user_profiles` — 1:1 preferences (arrays of preferred language/genre/category ids).
+	- `user_verifications` — OTP/verification tokens.
+	- `session` — session store (used by `connect-pg-simple`); columns: `sid`, `sess`, `expire`.
+
+- Shopping & orders
+	- `carts` & `cart_items` — one active cart per user (`carts.user_id` unique). `cart_items` links `cart_id` → `games.app_id`.
+	- `orders` & `order_items` — orders with `order_status`, `total_price`, `billing_address_id`. `order_items` stores `app_id`, `unit_price_paid` and applied discounts.
+	- `payments` & `payment_methods` — payment records and types; `payments` references `orders`.
+
+- Library & wishlist
+	- `user_game_library` — games owned by users (unique `(user_id, app_id)`).
+	- `user_wishlist_items` — wishlist entries (unique `(user_id, app_id)`).
+
+- Reviews & coupons
+	- `reviews` — user reviews per game (unique `(user_id, app_id)`).
+	- `coupons` & `user_coupon_usage` — coupon definitions and usage tracking.
+
+- Relationships (high-level)
+	- One-to-many: users → orders, users → user_billing_addresses, orders → order_items, orders → payments.
+	- One-to-one: games → game_descriptions, games → game_specs, users → user_profiles.
+	- Many-to-many: games ↔ languages/developers/publishers/genres/categories via link tables.
+
+See `backend/db/schema.md` for detailed column lists, constraints, enums and indexes. If you want, I can extract the full CREATE TABLE definitions into a SQL file or generate a visual ERD from the schema.
+
 ## API documentation
 
 - There is a basic API documentation file at `backend/API_DOC.md`. Refer to it for endpoint details and example requests.
