@@ -541,7 +541,9 @@ const GameDetail = () => {
               <div style={styles.contentSection}>
                 <div style={styles.aboutCol}>
                   <div style={styles.aboutContent}>
-                    <h2 style={styles.aboutTitle}>About this game</h2>
+                    <div style={styles.aboutTitleWrapper}>
+                      <h2 style={styles.aboutTitle}>About this game</h2>
+                    </div>
                     <p style={styles.description}>{previewDescription}</p>
                     {descriptionLength > 500 && (
                       <button style={styles.readMore} onClick={() => setShowFullDescription((s) => !s)}>
@@ -675,8 +677,9 @@ const GameDetail = () => {
 
                 {/* Review form */}
                 {isAuthenticated ? (
-                  <div style={styles.reviewFormWrapper}>
-                    <form onSubmit={handleSubmitReview} style={styles.reviewForm}>
+                  <div style={styles.reviewFormWrapperBorder}>
+                    <div style={styles.reviewFormWrapper}>
+                      <form onSubmit={handleSubmitReview} style={styles.reviewForm}>
                     <div style={styles.reviewToggleRow}>
                       <span style={styles.reviewLabel}>Your recommendation:</span>
                       <div style={styles.toggleGroup}>
@@ -727,7 +730,8 @@ const GameDetail = () => {
                     {reviewSuccess && (
                       <div style={styles.successMessage}>{reviewSuccess}</div>
                     )}
-                    </form>
+                      </form>
+                    </div>
                   </div>
                 ) : (
                   <div style={styles.reviewMessageRow}>
@@ -759,8 +763,9 @@ const GameDetail = () => {
                 {reviews && reviews.length > 0 ? (
                   <div style={styles.reviewList}>
                     {reviews.map((r) => (
-                      <div key={r.id} style={styles.reviewCardWrapper}>
-                        <div style={styles.reviewCard}>
+                      <div key={r.id} style={styles.reviewCardWrapperBorder}>
+                        <div style={styles.reviewCardWrapper}>
+                          <div style={styles.reviewCard}>
                         <div style={styles.reviewHeader}>
                           <span style={styles.reviewUser}>
                             {r.username || 'User'}
@@ -793,6 +798,7 @@ const GameDetail = () => {
                             <p style={styles.adminReplyBody}>{r.reply_text}</p>
                           </div>
                         )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -846,11 +852,11 @@ const styles = {
     color: '#6b7280',
     fontWeight: 600,
     background: 'linear-gradient(135deg, #e5e7eb, #f3f4f6)',
-    borderRadius: '0px',
+    borderRadius: '12px',
   },
   outerRedWrapper: {
     background: 'linear-gradient(to bottom, #EC5A61 0%, #ffffff 50%, #E02E35 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '72px',
     display: 'flex',
     flexDirection: 'column',
@@ -862,7 +868,7 @@ const styles = {
   },
   mainContentWrapper: {
     background: 'linear-gradient(135deg, #215122 0%, #748772 50%, #F2F0E9 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '16px',
     paddingRight: '30px',
     boxShadow: '0 12px 30px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1), 4px 4px 8px rgba(33, 81, 34, 0.4)',
@@ -873,7 +879,7 @@ const styles = {
   },
   heroWrapper: {
     background: 'transparent',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '0px',
     boxShadow: 'none',
     marginRight: '0px',
@@ -886,7 +892,7 @@ const styles = {
   },
   heroLeft: {
     background: 'linear-gradient(135deg, #ffffff 0%, #ffffff 45%, #C9CCBB 55%, #F2F0E9 70%, #748772 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
     padding: '8px',
@@ -899,18 +905,18 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
     display: 'block',
-    borderRadius: '0px',
+    borderRadius: '8px',
     boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.15)',
   },
   heroRightWrapper: {
     background: 'linear-gradient(to right, #748772 0%, #C9CCBB 40%, #F2F0E9 60%, #E02E35 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '8px',
     boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
   },
   heroRight: {
     background: '#C9CCBB',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '20px',
     boxShadow: 'none',
     display: 'flex',
@@ -994,7 +1000,7 @@ const styles = {
   },
   quickItem: {
     background: '#F2F0E9',
-    borderRadius: '0px',
+    borderRadius: '8px',
     padding: '10px',
     display: 'flex',
     flexDirection: 'column',
@@ -1030,18 +1036,25 @@ const styles = {
   },
   aboutCol: {
     background: 'transparent',
-    borderRadius: '0px',
+    borderRadius: '12px',
     boxShadow: 'none',
     padding: '0px',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
   },
+  aboutTitleWrapper: {
+    background: '#FCD34D',
+    borderRadius: '999px',
+    padding: '4px',
+    boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
+    display: 'inline-block',
+  },
   aboutTitle: {
     margin: 0,
     fontSize: '13px',
     fontWeight: 600,
-    display: 'inline-block',
+    display: 'block',
     background: 'linear-gradient(135deg, #215122, #748772)',
     color: '#ffffff',
     padding: '6px 10px',
@@ -1051,7 +1064,7 @@ const styles = {
     background: '#ffffff',
     borderRadius: '12px',
     padding: '18px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadow: 'inset 0 4px 12px rgba(33, 81, 34, 0.15), inset 0 -4px 12px rgba(33, 81, 34, 0.15), inset 4px 0 12px rgba(33, 81, 34, 0.15), inset -4px 0 12px rgba(33, 81, 34, 0.15)',
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
@@ -1063,19 +1076,19 @@ const styles = {
   },
   sidebarCardWrapper: {
     background: 'linear-gradient(135deg, #748772 0%, #C9CCBB 40%, #F2F0E9 60%, #E02E35 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '8px',
     boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
   },
   sidebarCardWrapperLanguages: {
     background: 'linear-gradient(135deg, #748772 0%, #C9CCBB 40%, #F2F0E9 60%, #E02E35 100%)',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '8px',
     boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
   },
   sidebarCard: {
     background: '#F2F0E9',
-    borderRadius: '0px',
+    borderRadius: '8px',
     padding: '14px',
     display: 'flex',
     flexDirection: 'column',
@@ -1139,7 +1152,7 @@ const styles = {
   },
   requirementsSection: {
     background: 'transparent',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '14px',
     boxShadow: 'none',
     display: 'flex',
@@ -1219,8 +1232,8 @@ const styles = {
     fontWeight: '600',
   },
   reviewsRedWrapper: {
-    background: 'linear-gradient(to bottom, #EC5A61 0%, #E02E35 100%)',
-    borderRadius: '0px',
+    background: '#f2f0e9',
+    borderRadius: '12px',
     padding: '16px',
     paddingRight: '30px',
     boxShadow: '0 4px 12px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
@@ -1229,7 +1242,7 @@ const styles = {
   reviewsSection: {
     marginTop: '0px',
     background: 'transparent',
-    borderRadius: '0px',
+    borderRadius: '12px',
     padding: '0px',
     boxShadow: 'none',
     display: 'flex',
@@ -1239,14 +1252,20 @@ const styles = {
   reviewSectionTitle: {
     margin: 0,
     fontSize: '18px',
-    color: '#ffffff',
+    color: '#0f172a',
     fontWeight: 700,
+  },
+  reviewFormWrapperBorder: {
+    background: 'linear-gradient(135deg, #FCD34D 0%, #ffffff 50%, #F59E0B 100%)',
+    borderRadius: '12px',
+    padding: '8px',
+    boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
   },
   reviewFormWrapper: {
     background: '#ffffff',
-    borderRadius: '12px',
+    borderRadius: '8px',
     padding: '18px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadow: 'none',
   },
   reviewForm: {
     display: 'flex',
@@ -1325,7 +1344,7 @@ const styles = {
     display: 'flex',
     gap: '12px',
     fontSize: '12px',
-    color: '#ffffff',
+    color: '#0f172a',
     fontWeight: 600,
   },
   reviewList: {
@@ -1334,15 +1353,22 @@ const styles = {
     gap: '8px',
     marginTop: '4px',
   },
-  reviewCardWrapper: {
-    background: '#ffffff',
+  reviewCardWrapperBorder: {
+    background: 'linear-gradient(135deg, #FCD34D 0%, #ffffff 50%, #F59E0B 100%)',
     borderRadius: '12px',
     padding: '8px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 8px 20px rgba(33, 81, 34, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.1)',
+    marginBottom: '12px',
+  },
+  reviewCardWrapper: {
+    background: '#ffffff',
+    borderRadius: '8px',
+    padding: '8px',
+    boxShadow: 'none',
   },
   reviewCard: {
     padding: '10px',
-    borderRadius: '0px',
+    borderRadius: '8px',
     background: 'transparent',
     border: 'none',
   },
