@@ -453,6 +453,9 @@ const GameDetail = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.container}>
           {loading && <div style={styles.badge}>Loading game...</div>}
@@ -827,6 +830,7 @@ const styles = {
     background: '#f8f9fb',
     minHeight: '100vh',
     padding: '16px 16px 0px 16px',
+    fontFamily: "'Manrope', sans-serif",
   },
   container: {
     maxWidth: '1200px',
@@ -929,6 +933,7 @@ const styles = {
     fontSize: '26px',
     color: '#0f172a',
     fontWeight: 700,
+    fontFamily: "'Fraunces', serif",
   },
   priceRow: {
     display: 'flex',
@@ -940,6 +945,7 @@ const styles = {
     color: '#16a34a',
     fontWeight: 700,
     fontSize: '18px',
+    fontFamily: "'Fraunces', serif",
   },
   priceOriginal: {
     color: '#9ca3af',
@@ -953,6 +959,7 @@ const styles = {
     padding: '6px 10px',
     borderRadius: '999px',
     fontSize: '13px',
+    fontFamily: "'Fraunces', serif",
   },
   heroBadge: {
     background: '#ef4444',
@@ -963,6 +970,7 @@ const styles = {
     fontSize: '12px',
     alignSelf: 'flex-start',
     boxShadow: '0 4px 12px rgba(239,68,68,0.25)',
+    fontFamily: "'Fraunces', serif",
   },
   ctaGroup: {
     display: 'flex',
@@ -980,6 +988,7 @@ const styles = {
     fontSize: '15px',
     cursor: 'pointer',
     boxShadow: '0 8px 18px rgba(33, 81, 34, 0.3)',
+    fontFamily: "'Manrope', sans-serif",
   },
   ctaSecondary: {
     width: '100%',
@@ -991,6 +1000,7 @@ const styles = {
     fontWeight: 700,
     fontSize: '14px',
     cursor: 'pointer',
+    fontFamily: "'Manrope', sans-serif",
   },
   quickInfo: {
     display: 'grid',
@@ -1013,6 +1023,7 @@ const styles = {
     letterSpacing: '0.05em',
     color: '#215122',
     fontWeight: 700,
+    fontFamily: "'Fraunces', serif",
   },
   quickValue: {
     fontSize: '14px',
@@ -1059,6 +1070,7 @@ const styles = {
     color: '#ffffff',
     padding: '6px 10px',
     borderRadius: '999px',
+    fontFamily: "'Fraunces', serif",
   },
   aboutContent: {
     background: '#ffffff',
@@ -1112,6 +1124,7 @@ const styles = {
     borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
+    fontFamily: "'Manrope', sans-serif",
   },
   moreBadgeButton: {
     border: '1px dashed #748772',
@@ -1122,6 +1135,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: 700,
     cursor: 'pointer',
+    fontFamily: "'Manrope', sans-serif",
   },
   readMore: {
     alignSelf: 'flex-start',
@@ -1137,18 +1151,21 @@ const styles = {
     margin: 0,
     fontSize: '18px',
     color: '#0f172a',
+    fontFamily: "'Fraunces', serif",
   },
   requirementsTitle: {
     margin: 0,
     fontSize: '18px',
     color: '#ffffff',
     fontWeight: 700,
+    fontFamily: "'Fraunces', serif",
   },
   description: {
     margin: 0,
     color: '#374151',
     lineHeight: 1.6,
     whiteSpace: 'pre-line',
+    fontFamily: "'Manrope', sans-serif",
   },
   requirementsSection: {
     background: 'transparent',
@@ -1188,6 +1205,7 @@ const styles = {
     margin: 0,
     fontSize: '16px',
     color: '#0f172a',
+    fontFamily: "'Fraunces', serif",
   },
   specList: {
     listStyle: 'none',
@@ -1254,6 +1272,7 @@ const styles = {
     fontSize: '18px',
     color: '#0f172a',
     fontWeight: 700,
+    fontFamily: "'Fraunces', serif",
   },
   reviewFormWrapperBorder: {
     background: 'linear-gradient(135deg, #FCD34D 0%, #ffffff 50%, #F59E0B 100%)',
@@ -1283,6 +1302,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: 600,
     color: '#4b5563',
+    fontFamily: "'Fraunces', serif",
   },
   toggleGroup: {
     display: 'flex',
@@ -1297,6 +1317,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: 600,
     cursor: 'pointer',
+    fontFamily: "'Manrope', sans-serif",
   },
   toggleButtonActive: {
     background: '#dcfce7',
@@ -1323,6 +1344,7 @@ const styles = {
     fontSize: '14px',
     fontWeight: 600,
     cursor: 'pointer',
+    fontFamily: "'Manrope', sans-serif",
   },
   reviewMessageRow: {
     display: 'flex',
@@ -1382,6 +1404,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: 600,
     color: '#111827',
+    fontFamily: "'Fraunces', serif",
   },
   reviewBadge: {
     fontSize: '11px',
@@ -1393,6 +1416,7 @@ const styles = {
     margin: 0,
     fontSize: '13px',
     color: '#374151',
+    fontFamily: "'Manrope', sans-serif",
   },
   adminReplyBox: {
     marginTop: '8px',
@@ -1412,6 +1436,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: 700,
     color: '#3b82f6',
+    fontFamily: "'Fraunces', serif",
   },
   adminReplyBy: {
     fontSize: '11px',
@@ -1421,6 +1446,7 @@ const styles = {
     margin: 0,
     fontSize: '13px',
     color: '#1f2937',
+    fontFamily: "'Manrope', sans-serif",
   },
   noReviewsText: {
     fontSize: '13px',

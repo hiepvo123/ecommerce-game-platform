@@ -4,6 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
 import PrivateRoute from '../components/common/PrivateRoute';
 import api from '../services/api';
+import '../styles/Library.css';
 
 const Library = () => {
   const { isAuthenticated } = useAuth();
@@ -113,349 +114,166 @@ const Library = () => {
   return (
     <PrivateRoute>
       <Navbar />
-      <main style={styles.container}>
-        <h1 style={styles.title}>My Library</h1>
-        
-        {loading && (
-          <div style={styles.message}>Loading your library...</div>
-        )}
-
-        {error && (
-          <div style={styles.error}>{error}</div>
-        )}
-
-        {!loading && !error && games.length === 0 && (
-          <div style={styles.message}>
-            <p>Your library is empty.</p>
-            <p style={styles.subMessage}>Games you purchase will appear here.</p>
-            <button
-              style={styles.browseButton}
-              onClick={() => navigate('/browse')}
-            >
-              Browse Games
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && games.length > 0 && (
-          <>
-            <div style={styles.gamesList}>
-              {games.map((game) => (
-                <div
-                  key={game.app_id}
-                  style={styles.gameCard}
-                >
-                  <div
-                    style={styles.gameClickable}
-                    onClick={() => navigate(`/game/${game.app_id}`)}
-                  >
-                    <div style={styles.gameImage}>
-                      <img
-                        src={game.header_image || '/placeholder-game.jpg'}
-                        alt={game.name}
-                        style={styles.image}
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.gameContent}>
-                    <h3 style={styles.gameName}>{game.name}</h3>
-                    <button
-                      style={styles.reviewButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openReviewPanel(game);
-                      }}
-                    >
-                      {selectedGame && selectedGame.app_id === game.app_id
-                        ? 'Editing Review'
-                        : 'Write a Review'}
-                    </button>
-                  </div>
-                </div>
-              ))}
+      <main className="library-page">
+        <div className="library-shell">
+          <div className="library-header">
+            <div>
+              <h1 className="library-title">My Library</h1>
+              <p className="library-subtitle">All the games you own, ready to play.</p>
             </div>
+            <div className="library-accent" aria-hidden="true" />
+          </div>
 
-            {selectedGame && (
-              <section style={styles.reviewPanel}>
-                <h2 style={styles.reviewTitle}>
-                  {`Your Review for ${selectedGame.name}`}
-                </h2>
-                <form onSubmit={handleSubmitReview} style={styles.reviewForm}>
-                  <div style={styles.reviewToggleRow}>
-                    <span style={styles.reviewLabel}>Your recommendation:</span>
-                    <div style={styles.toggleGroup}>
+          {loading && (
+            <div className="library-message">Loading your library...</div>
+          )}
+
+          {error && (
+            <div className="library-error">{error}</div>
+          )}
+
+          {!loading && !error && games.length === 0 && (
+            <div className="library-empty">
+              <p>Your library is empty.</p>
+              <p className="library-empty-sub">Games you purchase will appear here.</p>
+              <button
+                className="library-browse"
+                onClick={() => navigate('/browse')}
+                type="button"
+              >
+                Browse Games
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && games.length > 0 && (
+            <>
+              <div className="library-list">
+                {games.map((game, index) => (
+                  <div
+                    key={game.app_id}
+                    className="library-card"
+                    style={{ '--delay': `${index * 70}ms` }}
+                  >
+                    <div
+                      className="library-clickable"
+                      onClick={() => navigate(`/game/${game.app_id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          navigate(`/game/${game.app_id}`);
+                        }
+                      }}
+                    >
+                      <div className="library-image">
+                        <img
+                          src={game.header_image || '/placeholder-game.jpg'}
+                          alt={game.name}
+                          className="library-image-img"
+                        />
+                      </div>
+                    </div>
+                    <div className="library-content">
+                      <h3 className="library-name">{game.name}</h3>
                       <button
-                        type="button"
-                        style={{
-                          ...styles.toggleButton,
-                          ...(reviewRecommended ? styles.toggleButtonActive : {}),
+                        className="library-review-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openReviewPanel(game);
                         }}
-                        onClick={() => setReviewRecommended(true)}
-                      >
-                        Recommend
-                      </button>
-                      <button
                         type="button"
-                        style={{
-                          ...styles.toggleButton,
-                          ...(!reviewRecommended ? styles.toggleButtonActive : {}),
-                        }}
-                        onClick={() => setReviewRecommended(false)}
                       >
-                        Not Recommended
+                        {selectedGame && selectedGame.app_id === game.app_id
+                          ? 'Editing Review'
+                          : 'Write a Review'}
                       </button>
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  <textarea
-                    style={styles.reviewTextarea}
-                    rows={4}
-                    placeholder="Share your thoughts about this game..."
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                  />
+              {selectedGame && (
+                <section className="library-review">
+                  <h2 className="library-review-title">
+                    {`Your Review for ${selectedGame.name}`}
+                  </h2>
+                  <form onSubmit={handleSubmitReview} className="library-review-form">
+                    <div className="library-review-row">
+                      <span className="library-review-label">Your recommendation:</span>
+                      <div className="library-toggle-group">
+                        <button
+                          type="button"
+                          className={`library-toggle-btn${
+                            reviewRecommended ? ' is-active' : ''
+                          }`}
+                          onClick={() => setReviewRecommended(true)}
+                        >
+                          Recommend
+                        </button>
+                        <button
+                          type="button"
+                          className={`library-toggle-btn${
+                            !reviewRecommended ? ' is-active' : ''
+                          }`}
+                          onClick={() => setReviewRecommended(false)}
+                        >
+                          Not Recommended
+                        </button>
+                      </div>
+                    </div>
 
-                  <div style={styles.reviewActionsRow}>
-                    <button
-                      type="button"
-                      style={styles.cancelButton}
-                      onClick={() => {
-                        setSelectedGame(null);
-                        setMyReview(null);
-                        setReviewText('');
-                        setReviewRecommended(true);
-                        setReviewError('');
-                        setReviewSuccess('');
-                      }}
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="submit"
-                      style={styles.submitButton}
-                      disabled={reviewLoading}
-                    >
-                      {reviewLoading
-                        ? 'Saving...'
-                        : myReview
-                        ? 'Update Review'
-                        : 'Submit Review'}
-                    </button>
-                  </div>
+                    <textarea
+                      className="library-review-textarea"
+                      rows={4}
+                      placeholder="Share your thoughts about this game..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                    />
 
-                  {reviewError && <div style={styles.reviewError}>{reviewError}</div>}
-                  {reviewSuccess && <div style={styles.reviewSuccess}>{reviewSuccess}</div>}
-                </form>
-              </section>
-            )}
-          </>
-        )}
+                    <div className="library-review-actions">
+                      <button
+                        type="button"
+                        className="library-cancel-btn"
+                        onClick={() => {
+                          setSelectedGame(null);
+                          setMyReview(null);
+                          setReviewText('');
+                          setReviewRecommended(true);
+                          setReviewError('');
+                          setReviewSuccess('');
+                        }}
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="submit"
+                        className="library-submit-btn"
+                        disabled={reviewLoading}
+                      >
+                        {reviewLoading
+                          ? 'Saving...'
+                          : myReview
+                          ? 'Update Review'
+                          : 'Submit Review'}
+                      </button>
+                    </div>
+
+                    {reviewError && (
+                      <div className="library-review-error">{reviewError}</div>
+                    )}
+                    {reviewSuccess && (
+                      <div className="library-review-success">{reviewSuccess}</div>
+                    )}
+                  </form>
+                </section>
+              )}
+            </>
+          )}
+        </div>
       </main>
     </PrivateRoute>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '24px',
-  },
-  title: {
-    fontSize: '2rem',
-    fontWeight: '700',
-    marginBottom: '24px',
-    color: '#1a1a1a',
-  },
-  gamesList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  gameCard: {
-    background: '#fff',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    boxShadow: '0 6px 18px rgba(17,24,39,0.06)',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: '12px',
-    gap: '16px',
-  },
-  gameClickable: {
-    cursor: 'pointer',
-    display: 'flex',
-  },
-  gameImage: {
-    width: '120px',
-    height: '80px',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    flexShrink: 0,
-    background: '#f0f0f0',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    display: 'block',
-  },
-  gameContent: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    minWidth: 0,
-  },
-  gameName: {
-    fontSize: '15px',
-    fontWeight: 700,
-    margin: 0,
-    color: '#0f172a',
-  },
-  reviewButton: {
-    padding: '6px 12px',
-    borderRadius: '999px',
-    border: '1px solid #3b82f6',
-    background: '#fff',
-    color: '#1d4ed8',
-    fontSize: '0.85rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    alignSelf: 'flex-start',
-  },
-  message: {
-    textAlign: 'center',
-    padding: '48px',
-    color: '#666',
-    fontSize: '1.1rem',
-  },
-  subMessage: {
-    fontSize: '0.9rem',
-    color: '#999',
-    marginTop: '8px',
-  },
-  browseButton: {
-    marginTop: '24px',
-    padding: '12px 24px',
-    fontSize: '1rem',
-    fontWeight: '600',
-    background: '#3b82f6',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-  },
-  error: {
-    textAlign: 'center',
-    padding: '24px',
-    color: '#dc2626',
-    background: '#fee2e2',
-    borderRadius: '8px',
-    marginBottom: '24px',
-  },
-  reviewPanel: {
-    marginTop: '32px',
-    padding: '16px',
-    borderRadius: '12px',
-    background: '#f9fafb',
-    boxShadow: '0 4px 12px rgba(15,23,42,0.12)',
-  },
-  reviewTitle: {
-    margin: '0 0 12px',
-    fontSize: '1.2rem',
-    fontWeight: 700,
-    color: '#111827',
-  },
-  reviewForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-  reviewToggleRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
-  },
-  reviewLabel: {
-    fontSize: '0.9rem',
-    color: '#4b5563',
-    fontWeight: 600,
-  },
-  toggleGroup: {
-    display: 'flex',
-    gap: '8px',
-  },
-  toggleButton: {
-    padding: '6px 10px',
-    borderRadius: '999px',
-    border: '1px solid #d1d5db',
-    background: '#fff',
-    color: '#374151',
-    fontSize: '0.85rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  toggleButtonActive: {
-    background: '#dcfce7',
-    borderColor: '#16a34a',
-    color: '#166534',
-  },
-  reviewTextarea: {
-    width: '100%',
-    minHeight: '80px',
-    padding: '10px',
-    borderRadius: '10px',
-    border: '1px solid #d1d5db',
-    resize: 'vertical',
-    fontFamily: 'inherit',
-    fontSize: '0.95rem',
-  },
-  reviewActionsRow: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '8px',
-  },
-  cancelButton: {
-    padding: '8px 14px',
-    borderRadius: '999px',
-    border: '1px solid #d1d5db',
-    background: '#fff',
-    color: '#374151',
-    fontSize: '0.9rem',
-    fontWeight: 500,
-    cursor: 'pointer',
-  },
-  submitButton: {
-    padding: '8px 16px',
-    borderRadius: '999px',
-    border: 'none',
-    background: '#3b82f6',
-    color: '#fff',
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  reviewError: {
-    marginTop: '4px',
-    fontSize: '0.85rem',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    background: '#fee2e2',
-    color: '#b91c1c',
-  },
-  reviewSuccess: {
-    marginTop: '4px',
-    fontSize: '0.85rem',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    background: '#dcfce7',
-    color: '#166534',
-  },
 };
 
 export default Library;

@@ -308,18 +308,18 @@ const Navbar = () => {
               {!isAdmin && (
                 <>
                   <button className="nav__action-btn" onClick={() => navigate('/wishlist')}>
-                    <span className="nav__action-icon">❤️</span>
+
                     <span className="nav__action-text">Wishlist</span>
                   </button>
                   <button className="nav__action-btn nav__cart-btn" onClick={() => navigate('/cart')}>
-                    <span className="nav__action-icon">🛒</span>
+
                     <span className="nav__action-text">Cart</span>
                     {cartCount > 0 && (
                       <span className="nav__cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>
                     )}
                   </button>
                   <button className="nav__action-btn" onClick={() => navigate('/orders')}>
-                    <span className="nav__action-icon">📦</span>
+
                     <span className="nav__action-text">Orders</span>
                   </button>
                   <button className="nav__action-btn" onClick={() => navigate('/profile')}>

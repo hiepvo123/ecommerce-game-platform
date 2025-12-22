@@ -763,6 +763,9 @@ const Home = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.topBar}>
           <div>
@@ -1011,8 +1014,11 @@ export default Home;
 
 const styles = {
   page: {
-    padding: '16px 22px 40px',
-    background: '#f8f9fb',
+    padding: '20px 22px 48px',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
+    minHeight: 'calc(100vh - 72px)',
+    fontFamily: "'Manrope', sans-serif",
   },
   topBar: {
     display: 'flex',
@@ -1024,12 +1030,14 @@ const styles = {
   },
   heading: {
     margin: 0,
-    fontSize: '26px',
-    color: '#111827',
+    fontSize: '28px',
+    color: '#215122',
+    letterSpacing: '0.2px',
+    fontFamily: "'Fraunces', serif",
   },
   subheading: {
     margin: '6px 0 0',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   button: {
@@ -1037,16 +1045,16 @@ const styles = {
     padding: '0 18px',
     borderRadius: '12px',
     border: 'none',
-    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+    background: 'linear-gradient(135deg, #215122, #748772)',
     color: '#fff',
     fontWeight: 600,
     fontSize: '14px',
     cursor: 'pointer',
-    boxShadow: '0 8px 20px rgba(239,68,68,0.2)',
+    boxShadow: '0 10px 20px rgba(33,81,34,0.2)',
   },
   badge: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.65)',
   },
   section: {
     marginTop: '22px',
@@ -1062,11 +1070,12 @@ const styles = {
   sectionTitle: {
     margin: 0,
     fontSize: '18px',
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   error: {
     fontSize: '12px',
-    color: '#b91c1c',
+    color: '#8b1d22',
   },
 
   /* card styles (used by cardGrid) */
@@ -1081,9 +1090,10 @@ const styles = {
   },
   card: {
     background: '#fff',
-    borderRadius: '12px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 6px 18px rgba(17,24,39,0.08)',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    boxShadow: '0 8px 18px rgba(33,81,34,0.08)',
   },
   cardImageWrap: {
     position: 'relative',
@@ -1103,7 +1113,7 @@ const styles = {
   cardTitle: {
     fontWeight: 600,
     fontSize: '15px',
-    color: '#0f172a',
+    color: '#1c231f',
     marginBottom: '6px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -1115,12 +1125,12 @@ const styles = {
     gap: '8px',
   },
   priceCurrent: {
-    color: '#059669',
+    color: '#215122',
     fontWeight: 700,
     fontSize: '14px',
   },
   priceOriginal: {
-    color: '#9ca3af',
+    color: 'rgba(33, 81, 34, 0.5)',
     textDecoration: 'line-through',
     fontSize: '13px',
     fontWeight: 400,
@@ -1129,20 +1139,20 @@ const styles = {
     position: 'absolute',
     top: '10px',
     right: '10px',
-    background: '#ef4444',
+    background: '#e02e35',
     color: '#fff',
     padding: '6px 10px',
-    borderRadius: '6px',
-    fontSize: '13px',
+    borderRadius: '999px',
+    fontSize: '12px',
     fontWeight: 700,
-    boxShadow: '0 4px 12px rgba(239,68,68,0.25)',
+    boxShadow: '0 6px 14px rgba(224,46,53,0.25)',
   },
   heartButton: {
     position: 'absolute',
     top: '12px',
     left: '10px',
     background: 'rgba(255,255,255,0.95)',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(33, 81, 34, 0.18)',
     borderRadius: '50%',
     width: '36px',
     height: '36px',
@@ -1151,14 +1161,14 @@ const styles = {
     justifyContent: 'center',
     cursor: 'pointer',
     zIndex: 3,
-    boxShadow: '0 10px 20px rgba(17,24,39,0.12)',
+    boxShadow: '0 10px 20px rgba(33,81,34,0.14)',
   },
   heartIcon: {
-    color: '#9ca3af',
+    color: '#8fa094',
     fontSize: '18px',
   },
   heartIconActive: {
-    color: '#ef4444',
+    color: '#e02e35',
     fontSize: '18px',
   },
   catalogSection: {
@@ -1181,18 +1191,20 @@ const styles = {
     overflowY: 'auto',
   },
   filterCard: {
-    background: '#fff',
-    borderRadius: '12px',
+    background: '#f2f0e9',
+    borderRadius: '16px',
     padding: '16px',
-    boxShadow: '0 6px 18px rgba(17,24,39,0.06)',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    boxShadow: '0 10px 24px rgba(33,81,34,0.08)',
   },
   filterCardTitle: {
     margin: '0 0 16px 0',
     fontSize: '16px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
     paddingBottom: '12px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
+    fontFamily: "'Fraunces', serif",
   },
   filterColumnContent: {
     display: 'flex',
@@ -1209,7 +1221,7 @@ const styles = {
   },
   filterLabel: {
     fontSize: '13px',
-    color: '#4b5563',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontWeight: 600,
   },
   select: {
@@ -1229,16 +1241,16 @@ const styles = {
   selectAccent: {
     padding: '8px 32px 8px 12px',
     borderRadius: '12px',
-    border: '1px solid #bfdbfe',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
     fontSize: '13px',
-    color: '#0f172a',
-    background: '#eff6ff',
+    color: '#1c231f',
+    background: '#f7f4ef',
     backgroundImage:
-      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/svg%3E\")",
+      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23215122'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/svg%3E\")",
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 8px center',
     backgroundSize: '16px',
-    boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
+    boxShadow: '0 1px 2px rgba(33,81,34,0.08)',
     outline: 'none',
     appearance: 'none',
     WebkitAppearance: 'none',
@@ -1256,12 +1268,12 @@ const styles = {
     gap: '6px',
     alignItems: 'center',
     fontSize: '13px',
-    color: '#374151',
+    color: '#324035',
   },
   priceBox: {
-    border: '1px solid #e5e7eb',
-    borderRadius: '10px',
-    background: '#f8fafc',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
+    borderRadius: '12px',
+    background: '#f7f4ef',
     padding: '12px',
     display: 'flex',
     flexDirection: 'column',
@@ -1271,7 +1283,8 @@ const styles = {
   priceBoxHeader: {
     fontSize: '13px',
     fontWeight: 700,
-    color: '#0f172a',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   priceControls: {
     display: 'flex',
@@ -1289,13 +1302,13 @@ const styles = {
   },
   applyButton: {
     border: 'none',
-    background: '#3b82f6',
+    background: 'linear-gradient(135deg, #215122, #748772)',
     color: '#fff',
     padding: '8px 12px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontWeight: 700,
     cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(59,130,246,0.25)',
+    boxShadow: '0 8px 16px rgba(33,81,34,0.2)',
   },
   priceButtons: {
     display: 'flex',
@@ -1303,11 +1316,11 @@ const styles = {
     alignItems: 'center',
   },
   secondaryButton: {
-    border: '1px solid #e5e7eb',
-    background: '#f9fafb',
-    color: '#374151',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
+    background: '#fff',
+    color: '#324035',
     padding: '8px 12px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontWeight: 700,
     cursor: 'pointer',
   },
@@ -1318,11 +1331,12 @@ const styles = {
   input: {
     width: '100%',
     padding: '8px 10px',
-    borderRadius: '8px',
-    border: '1px solid #e5e7eb',
+    borderRadius: '10px',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     fontSize: '13px',
-    color: '#111827',
+    color: '#1c231f',
     boxSizing: 'border-box',
+    background: '#fff',
   },
   checkboxLabel: {
     display: 'flex',
@@ -1343,9 +1357,10 @@ const styles = {
   },
   catalogPane: {
     background: '#fff',
-    padding: '14px',
-    borderRadius: '12px',
-    boxShadow: '0 6px 18px rgba(17,24,39,0.06)',
+    padding: '16px',
+    borderRadius: '16px',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    boxShadow: '0 10px 24px rgba(33,81,34,0.08)',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
@@ -1358,7 +1373,8 @@ const styles = {
     margin: '0 0 16px 0',
     fontSize: '20px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   featuredScroll: {
     display: 'flex',
@@ -1371,9 +1387,10 @@ const styles = {
   featuredCard: {
     flex: '0 0 180px',
     background: '#fff',
-    borderRadius: '12px',
+    borderRadius: '14px',
     overflow: 'hidden',
-    boxShadow: '0 4px 12px rgba(17,24,39,0.08)',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    boxShadow: '0 6px 14px rgba(33,81,34,0.08)',
     cursor: 'pointer',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   },
@@ -1393,13 +1410,13 @@ const styles = {
     position: 'absolute',
     top: '8px',
     right: '8px',
-    background: '#ef4444',
+    background: '#e02e35',
     color: '#fff',
     padding: '4px 8px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 700,
-    boxShadow: '0 2px 8px rgba(239,68,68,0.4)',
+    boxShadow: '0 4px 10px rgba(224,46,53,0.35)',
   },
   featuredCardBody: {
     padding: '10px',
@@ -1407,7 +1424,7 @@ const styles = {
   featuredCardTitle: {
     fontWeight: 600,
     fontSize: '13px',
-    color: '#0f172a',
+    color: '#1c231f',
     marginBottom: '4px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -1415,12 +1432,12 @@ const styles = {
   },
   featuredPrice: {
     fontSize: '12px',
-    color: '#059669',
+    color: '#215122',
     fontWeight: 700,
   },
   featuredPriceStrikethrough: {
     fontSize: '11px',
-    color: '#9ca3af',
+    color: 'rgba(33, 81, 34, 0.5)',
     fontWeight: 400,
     textDecoration: 'line-through',
   },
@@ -1429,26 +1446,27 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 0',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
     marginBottom: '12px',
   },
   catalogTitle: {
     margin: 0,
     fontSize: '20px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   loadingMore: {
     textAlign: 'center',
     padding: '20px',
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   endMessage: {
     textAlign: 'center',
     padding: '20px',
     fontSize: '14px',
-    color: '#9ca3af',
+    color: 'rgba(33, 81, 34, 0.55)',
     fontStyle: 'italic',
   },
 };
