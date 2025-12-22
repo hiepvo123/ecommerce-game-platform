@@ -179,6 +179,9 @@ const GamesManagement = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.card}>
           <div style={styles.header}>
@@ -295,7 +298,7 @@ const GamesManagement = () => {
                   {filteredGames.map((game) => (
                     <tr key={game.app_id}>
                       <td style={styles.td}>#{game.app_id}</td>
-                      <td style={styles.td}>{game.name || '—'}</td>
+                      <td style={styles.td}>{game.name || ' _ '}</td>
                       <td style={styles.td}>
                         {game.discount_percent > 0
                           ? formatPrice(game.price_final / (1 - game.discount_percent / 100))
@@ -307,7 +310,7 @@ const GamesManagement = () => {
                             -{game.discount_percent}%
                           </span>
                         ) : (
-                          '—'
+                          ' _ '
                         )}
                       </td>
                       <td style={styles.td}>
@@ -353,16 +356,17 @@ const GamesManagement = () => {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#f8f9fb',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     padding: '24px',
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#ffffff',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '18px',
     padding: '20px',
-    boxShadow: '0 15px 40px rgba(0,0,0,0.06)',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
   },
   toolbar: {
     display: 'flex',
@@ -370,6 +374,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     marginBottom: '16px',
+    flexWrap: 'wrap',
   },
   searchWrapper: {
     flex: 1,
@@ -378,19 +383,22 @@ const styles = {
     width: '100%',
     padding: '8px 10px',
     borderRadius: '10px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     fontSize: '14px',
+    background: '#fff',
   },
   toolbarRight: {
     display: 'flex',
     gap: '8px',
+    flexWrap: 'wrap',
   },
   select: {
     padding: '8px 10px',
-    borderRadius: '10px',
-    border: '1px solid #e5e7eb',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
     fontSize: '14px',
-    background: '#f9fafb',
+    background: '#fff',
+    color: '#215122',
   },
   header: {
     display: 'flex',
@@ -400,25 +408,26 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     margin: '6px 0 0',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   backButton: {
     padding: '10px 20px',
-    borderRadius: '8px',
-    border: '1px solid #d1d5db',
-    background: '#f9fafb',
-    color: '#111827',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
+    background: '#fff',
+    color: '#215122',
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: '14px',
-    transition: 'background 0.2s',
+    boxShadow: '0 8px 16px rgba(33, 81, 34, 0.12)',
   },
   tableContainer: {
     overflowX: 'auto',
@@ -432,53 +441,55 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    borderBottom: '2px solid #e5e7eb',
-    fontWeight: 600,
-    color: '#111827',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
+    fontWeight: 700,
+    color: '#215122',
     fontSize: '14px',
+    fontFamily: "'Fraunces', serif",
   },
   td: {
     padding: '12px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid rgba(33, 81, 34, 0.12)',
     fontSize: '14px',
-    color: '#374151',
+    color: '#324035',
   },
   discountBadge: {
     padding: '4px 8px',
-    borderRadius: '4px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
     color: '#fff',
-    backgroundColor: '#ef4444',
+    backgroundColor: '#e02e35',
   },
   viewButton: {
     padding: '6px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     border: '1px solid #3b82f6',
     background: '#fff',
     color: '#3b82f6',
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: '12px',
-    transition: 'background 0.2s',
+    boxShadow: '0 6px 12px rgba(59, 130, 246, 0.2)',
   },
   message: {
     padding: '20px',
     textAlign: 'center',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   error: {
     padding: '20px',
     textAlign: 'center',
-    color: '#ef4444',
-    background: '#fef2f2',
-    borderRadius: '8px',
+    color: '#8b1d22',
+    background: 'rgba(224, 46, 53, 0.12)',
+    borderRadius: '12px',
+    border: '1px solid rgba(224, 46, 53, 0.3)',
   },
   loadingMore: {
     padding: '12px',
     textAlign: 'center',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
 };
 

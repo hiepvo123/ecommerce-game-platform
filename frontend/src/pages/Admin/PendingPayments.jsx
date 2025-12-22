@@ -68,6 +68,16 @@ const PendingPayments = () => {
     return statusColors[status] || '#6b7280'; // gray default
   };
 
+  const hexToRgba = (hex, alpha) => {
+    if (!hex || typeof hex !== 'string') return `rgba(33, 81, 34, ${alpha})`;
+    const normalized = hex.replace('#', '');
+    if (normalized.length !== 6) return `rgba(33, 81, 34, ${alpha})`;
+    const r = parseInt(normalized.slice(0, 2), 16);
+    const g = parseInt(normalized.slice(2, 4), 16);
+    const b = parseInt(normalized.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   const getOrderStatusColor = (status) => {
     const statusColors = {
       pending: '#f59e0b', // yellow
@@ -90,6 +100,9 @@ const PendingPayments = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.card}>
           <div style={styles.header}>
@@ -137,9 +150,9 @@ const PendingPayments = () => {
                           #{payment.order_id}
                         </button>
                       </td>
-                      <td style={styles.td}>{payment.user_username || '—'}</td>
-                      <td style={styles.td}>{payment.user_email || '—'}</td>
-                      <td style={styles.td}>{payment.payment_name || '—'}</td>
+                      <td style={styles.td}>{payment.user_username || ' _ '}</td>
+                      <td style={styles.td}>{payment.user_email || ' _ '}</td>
+                      <td style={styles.td}>{payment.payment_name || ' _ '}</td>
                       <td style={styles.td}>{formatPrice(payment.payment_price)}</td>
                       <td style={styles.td}>
                         <span
@@ -166,7 +179,15 @@ const PendingPayments = () => {
                       </td>
                       <td style={styles.td}>
                         <select
-                          style={styles.select}
+                          style={{
+                            ...styles.select,
+                            borderColor: getPaymentStatusColor(payment.payment_status),
+                            color: getPaymentStatusColor(payment.payment_status),
+                            backgroundColor: hexToRgba(
+                              getPaymentStatusColor(payment.payment_status),
+                              0.12
+                            ),
+                          }}
                           value={payment.payment_status}
                           onChange={(e) => handleStatusChange(payment.id, e.target.value)}
                           disabled={updating[payment.id]}
@@ -197,16 +218,17 @@ const PendingPayments = () => {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#f8f9fb',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     padding: '24px',
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#ffffff',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '18px',
     padding: '20px',
-    boxShadow: '0 15px 40px rgba(0,0,0,0.06)',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
   },
   header: {
     display: 'flex',
@@ -216,25 +238,26 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     margin: '6px 0 0',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   backButton: {
     padding: '10px 20px',
-    borderRadius: '8px',
-    border: '1px solid #d1d5db',
-    background: '#f9fafb',
-    color: '#111827',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
+    background: '#fff',
+    color: '#215122',
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: '14px',
-    transition: 'background 0.2s',
+    boxShadow: '0 8px 16px rgba(33, 81, 34, 0.12)',
   },
   tableContainer: {
     overflowX: 'auto',
@@ -246,20 +269,21 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    borderBottom: '2px solid #e5e7eb',
-    fontWeight: 600,
-    color: '#111827',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
+    fontWeight: 700,
+    color: '#215122',
     fontSize: '14px',
+    fontFamily: "'Fraunces', serif",
   },
   td: {
     padding: '12px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid rgba(33, 81, 34, 0.12)',
     fontSize: '14px',
-    color: '#374151',
+    color: '#324035',
   },
   statusBadge: {
     padding: '4px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
     color: '#fff',
@@ -268,10 +292,10 @@ const styles = {
   },
   select: {
     padding: '6px 12px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.3)',
     background: '#fff',
-    color: '#111827',
+    color: '#215122',
     fontSize: '12px',
     cursor: 'pointer',
     minWidth: '120px',
@@ -280,27 +304,28 @@ const styles = {
     padding: 0,
     border: 'none',
     background: 'none',
-    color: '#3b82f6',
+    color: '#215122',
     cursor: 'pointer',
     textDecoration: 'underline',
     fontSize: '14px',
   },
   updating: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     marginLeft: '8px',
   },
   message: {
     padding: '20px',
     textAlign: 'center',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   error: {
     padding: '20px',
     textAlign: 'center',
-    color: '#ef4444',
-    background: '#fef2f2',
-    borderRadius: '8px',
+    color: '#8b1d22',
+    background: 'rgba(224, 46, 53, 0.12)',
+    borderRadius: '12px',
+    border: '1px solid rgba(224, 46, 53, 0.3)',
   },
 };
 

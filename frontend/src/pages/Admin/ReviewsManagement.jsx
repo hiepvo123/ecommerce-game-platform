@@ -62,7 +62,7 @@ const ReviewsManagement = () => {
       if (reset) {
         setReviews(safeList);
       } else {
-        setReviews(prev => [...prev, ...safeList]);
+        setReviews((prev) => [...prev, ...safeList]);
       }
 
       setHasMore(safeList.length === PAGE_SIZE);
@@ -96,7 +96,7 @@ const ReviewsManagement = () => {
   };
 
   const formatDate = (val) => {
-    if (!val) return '—';
+    if (!val) return ' _ ';
     try {
       return new Date(val).toLocaleString();
     } catch {
@@ -165,6 +165,9 @@ const ReviewsManagement = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.card}>
           <div style={styles.header}>
@@ -251,7 +254,9 @@ const ReviewsManagement = () => {
                     <tr key={rev.id}>
                       <td style={styles.td}>#{rev.id}</td>
                       <td style={styles.td}>{rev.game_name || `#${rev.app_id}`}</td>
-                      <td style={styles.td}>{rev.username || rev.email || `User #${rev.user_id}`}</td>
+                      <td style={styles.td}>
+                        {rev.username || rev.email || `User #${rev.user_id}`}
+                      </td>
                       <td style={styles.td}>
                         <span
                           style={{
@@ -264,8 +269,8 @@ const ReviewsManagement = () => {
                       </td>
                       <td style={styles.td}>
                         {rev.review_text && rev.review_text.length > 80
-                          ? `${rev.review_text.slice(0, 80)}…`
-                          : rev.review_text || '—'}
+                          ? `${rev.review_text.slice(0, 80)}...`
+                          : rev.review_text || ' _ '}
                       </td>
                       <td style={styles.td}>{formatDate(rev.review_at)}</td>
                       <td style={styles.td}>
@@ -301,7 +306,7 @@ const ReviewsManagement = () => {
             <div style={styles.modalOriginalReview}>
               <div style={styles.modalLabel}>Original review</div>
               <p style={styles.modalReviewText}>
-                {activeReview.review_text || '—'}
+                {activeReview.review_text || ' _ '}
               </p>
             </div>
             <div style={styles.modalField}>
@@ -343,16 +348,17 @@ const ReviewsManagement = () => {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#f8f9fb',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     padding: '24px',
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#ffffff',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '18px',
     padding: '20px',
-    boxShadow: '0 15px 40px rgba(0,0,0,0.06)',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
   },
   header: {
     display: 'flex',
@@ -362,25 +368,26 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     margin: '6px 0 0',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   backButton: {
     padding: '10px 20px',
-    borderRadius: '8px',
-    border: '1px solid #d1d5db',
-    background: '#f9fafb',
-    color: '#111827',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
+    background: '#fff',
+    color: '#215122',
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: '14px',
-    transition: 'background 0.2s',
+    boxShadow: '0 8px 16px rgba(33, 81, 34, 0.12)',
   },
   toolbar: {
     display: 'flex',
@@ -388,6 +395,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     marginBottom: '16px',
+    flexWrap: 'wrap',
   },
   searchWrapper: {
     flex: 1,
@@ -396,19 +404,22 @@ const styles = {
     width: '100%',
     padding: '8px 10px',
     borderRadius: '10px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     fontSize: '14px',
+    background: '#fff',
   },
   toolbarRight: {
     display: 'flex',
     gap: '8px',
+    flexWrap: 'wrap',
   },
   select: {
     padding: '8px 10px',
-    borderRadius: '10px',
-    border: '1px solid #e5e7eb',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
     fontSize: '14px',
-    background: '#f9fafb',
+    background: '#fff',
+    color: '#215122',
   },
   tableContainer: {
     overflowX: 'auto',
@@ -422,51 +433,54 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    borderBottom: '2px solid #e5e7eb',
-    fontWeight: 600,
-    color: '#111827',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
+    fontWeight: 700,
+    color: '#215122',
     fontSize: '14px',
+    fontFamily: "'Fraunces', serif",
   },
   td: {
     padding: '12px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid rgba(33, 81, 34, 0.12)',
     fontSize: '14px',
-    color: '#374151',
+    color: '#324035',
   },
   verifiedBadge: {
     padding: '4px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
     color: '#fff',
   },
   replyButton: {
     padding: '6px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     border: '1px solid #3b82f6',
     background: '#fff',
     color: '#3b82f6',
     cursor: 'pointer',
     fontSize: '12px',
-    fontWeight: 500,
+    fontWeight: 600,
+    boxShadow: '0 6px 12px rgba(59, 130, 246, 0.2)',
   },
   message: {
     padding: '20px',
     textAlign: 'center',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   error: {
     padding: '20px',
     textAlign: 'center',
-    color: '#ef4444',
-    background: '#fef2f2',
-    borderRadius: '8px',
+    color: '#8b1d22',
+    background: 'rgba(224, 46, 53, 0.12)',
+    borderRadius: '12px',
+    border: '1px solid rgba(224, 46, 53, 0.3)',
   },
   loadingMore: {
     padding: '12px',
     textAlign: 'center',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   modalOverlay: {
     position: 'fixed',
@@ -486,36 +500,38 @@ const styles = {
     padding: '20px 24px 24px',
     width: '600px',
     maxWidth: '95vw',
-    boxShadow: '0 18px 45px rgba(15,23,42,0.16)',
+    boxShadow: '0 18px 45px rgba(33,81,34,0.18)',
   },
   modalTitle: {
     margin: 0,
     fontSize: '20px',
     fontWeight: 700,
-    color: '#0f172a',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   modalMeta: {
     marginTop: '8px',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   modalOriginalReview: {
     marginTop: '12px',
     padding: '10px 12px',
     borderRadius: '10px',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: '#f7f4ef',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
   },
   modalLabel: {
     fontSize: '13px',
     fontWeight: 600,
-    color: '#4b5563',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
     marginBottom: '4px',
   },
   modalReviewText: {
     margin: 0,
     fontSize: '13px',
-    color: '#374151',
+    color: '#324035',
   },
   modalField: {
     marginTop: '12px',
@@ -526,11 +542,12 @@ const styles = {
   modalTextarea: {
     width: '100%',
     borderRadius: '10px',
-    border: '1px solid #d1d5db',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     padding: '10px',
     fontSize: '14px',
     resize: 'vertical',
     fontFamily: 'inherit',
+    background: '#fff',
   },
   modalActions: {
     marginTop: '14px',
@@ -542,7 +559,7 @@ const styles = {
     padding: '8px 16px',
     borderRadius: '999px',
     border: 'none',
-    background: '#2563eb',
+    background: 'linear-gradient(135deg, #215122, #748772)',
     color: '#fff',
     fontSize: '14px',
     fontWeight: 600,
@@ -551,28 +568,30 @@ const styles = {
   modalSecondary: {
     padding: '8px 16px',
     borderRadius: '999px',
-    border: '1px solid #d1d5db',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
     background: '#fff',
-    color: '#111827',
+    color: '#215122',
     fontSize: '14px',
-    fontWeight: 500,
+    fontWeight: 600,
     cursor: 'pointer',
   },
   modalError: {
     marginTop: '8px',
     padding: '8px 10px',
     borderRadius: '8px',
-    background: '#fee2e2',
-    color: '#b91c1c',
+    background: 'rgba(224, 46, 53, 0.12)',
+    color: '#8b1d22',
     fontSize: '13px',
+    border: '1px solid rgba(224, 46, 53, 0.3)',
   },
   modalSuccess: {
     marginTop: '8px',
     padding: '8px 10px',
     borderRadius: '8px',
-    background: '#dcfce7',
-    color: '#166534',
+    background: 'rgba(33, 81, 34, 0.12)',
+    color: '#1f3b27',
     fontSize: '13px',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
   },
 };
 

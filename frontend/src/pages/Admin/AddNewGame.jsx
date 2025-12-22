@@ -214,6 +214,9 @@ const AddNewGame = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <form style={styles.card} onSubmit={handleSubmit}>
           <h1 style={styles.title}>Add New Game</h1>
@@ -375,8 +378,10 @@ export default AddNewGame;
 const styles = {
   page: {
     padding: '32px',
-    background: '#0f172a0d',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     minHeight: '100vh',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
     background: '#ffffff',
@@ -386,19 +391,20 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
-    borderRadius: '16px',
-    boxShadow: '0 18px 45px rgba(15,23,42,0.12)',
-    border: '1px solid #e2e8f0',
+    borderRadius: '18px',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
   },
   title: {
-    fontSize: '24px',
+    fontSize: '26px',
     fontWeight: 700,
-    color: '#0f172a',
+    color: '#215122',
     margin: 0,
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     fontSize: '14px',
-    color: '#64748b',
+    color: 'rgba(33, 81, 34, 0.7)',
     margin: 0,
   },
   field: {
@@ -409,22 +415,22 @@ const styles = {
   },
   label: {
     fontWeight: 600,
-    color: '#0f172a',
+    color: '#1c231f',
   },
   input: {
     padding: '9px 10px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     fontSize: '14px',
-    background: '#f8fafc',
+    background: '#fff',
   },
   textarea: {
     padding: '9px 10px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     fontSize: '14px',
     minHeight: '120px',
-    background: '#f8fafc',
+    background: '#fff',
     resize: 'vertical',
   },
   inlineFields: {
@@ -442,7 +448,7 @@ const styles = {
     alignItems: 'center',
     gap: '6px',
     fontSize: '14px',
-    color: '#334155',
+    color: '#324035',
   },
   actions: {
     display: 'flex',
@@ -453,22 +459,23 @@ const styles = {
     padding: '10px 18px',
     borderRadius: '999px',
     border: 'none',
-    background: '#2563eb',
+    background: 'linear-gradient(135deg, #215122, #748772)',
     color: '#ffffff',
     fontWeight: 600,
     fontSize: '14px',
     cursor: 'pointer',
+    boxShadow: '0 10px 18px rgba(33, 81, 34, 0.2)',
   },
 
   // Multiselect styles (aligned with Profile page)
   sectionLabel: {
     fontWeight: 600,
     margin: '4px 0 6px',
-    color: '#111827',
+    color: '#1c231f',
     fontSize: '0.9rem',
   },
   selectShell: {
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     borderRadius: '10px',
     padding: '10px',
     background: '#fff',
@@ -486,12 +493,12 @@ const styles = {
     flex: 1,
   },
   placeholder: {
-    color: '#9ca3af',
+    color: 'rgba(33, 81, 34, 0.5)',
     fontSize: '14px',
   },
   caret: {
     marginLeft: '8px',
-    color: '#6b7280',
+    color: '#215122',
     fontSize: '12px',
   },
   dropdown: {
@@ -500,12 +507,12 @@ const styles = {
     left: 0,
     right: 0,
     marginTop: '6px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(33, 81, 34, 0.2)',
     borderRadius: '10px',
     background: '#fff',
     maxHeight: '220px',
     overflowY: 'auto',
-    boxShadow: '0 12px 30px rgba(0,0,0,0.08)',
+    boxShadow: '0 12px 30px rgba(33, 81, 34, 0.12)',
     zIndex: 10,
   },
   dropdownItem: {
@@ -514,13 +521,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    color: '#111827',
-    borderBottom: '1px solid #f3f4f6',
+    color: '#1c231f',
+    borderBottom: '1px solid rgba(33, 81, 34, 0.1)',
     fontSize: '0.9rem',
   },
   dropdownItemActive: {
-    background: '#fef2f2',
-    color: '#b91c1c',
+    background: 'rgba(33, 81, 34, 0.1)',
+    color: '#215122',
   },
   check: {
     marginLeft: '8px',
@@ -530,8 +537,8 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    background: '#fee2e2',
-    color: '#b91c1c',
+    background: 'rgba(33, 81, 34, 0.12)',
+    color: '#215122',
     borderRadius: '999px',
     padding: '4px 8px',
     fontSize: '12px',
@@ -540,7 +547,7 @@ const styles = {
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
-    color: '#b91c1c',
+    color: '#215122',
     fontSize: '12px',
     lineHeight: 1,
   },

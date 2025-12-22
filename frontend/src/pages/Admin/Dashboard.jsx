@@ -25,8 +25,8 @@ const ActionBox = ({ title, actions, navigate }) => (
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  // Khởi tạo state với giá trị mặc định '—'
-  const [stats, setStats] = useState({ orders: '—', users: '—', games: '—' });
+  // Initialize with a neutral placeholder value
+  const [stats, setStats] = useState({ orders: ' _ ', users: ' _ ', games: ' _ ' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -114,6 +114,9 @@ const AdminDashboard = () => {
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.card}>
           <h1 style={styles.title}>Admin Dashboard</h1>
@@ -241,10 +244,10 @@ const AdminDashboard = () => {
                     <td style={styles.td}>
                       {rev.review_text && rev.review_text.length > 80
                         ? `${rev.review_text.slice(0, 80)}…`
-                        : rev.review_text || '—'}
+                        : rev.review_text || ' _ '}
                     </td>
                     <td style={styles.td}>
-                      {rev.review_at ? new Date(rev.review_at).toLocaleDateString() : '—'}
+                      {rev.review_at ? new Date(rev.review_at).toLocaleDateString() : ' _ '}
                     </td>
                   </tr>
                 ))}
@@ -263,16 +266,17 @@ export default AdminDashboard;
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#f8f9fb',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     padding: '24px',
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#f2f0e9',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '18px',
     padding: '20px',
-    boxShadow: '0 15px 40px rgba(0,0,0,0.06)',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
   },
 
   // 🔥 [THÊM] Styles cho Quick Actions
@@ -280,21 +284,23 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '20px',
+    marginTop: '18px',
   },
   actionBox: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#ffffff',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '16px',
     padding: '20px',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.04)',
+    boxShadow: '0 10px 24px rgba(33, 81, 34, 0.08)',
   },
   actionTitle: {
             margin: '0 0 15px 0',
             fontSize: '18px',
-            fontWeight: 600,
-            color: '#111827',
-            borderBottom: '1px solid #f3f4f6',
+            fontWeight: 700,
+            color: '#215122',
+            borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
             paddingBottom: '10px',
+            fontFamily: "'Fraunces', serif",
         },
         actionGroup: {
             display: 'flex',
@@ -303,26 +309,27 @@ const styles = {
         },
         actionButton: {
             padding: '10px 15px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            background: '#f9fafb',
-            color: '#111827',
+            borderRadius: '12px',
+            border: '1px solid rgba(33, 81, 34, 0.2)',
+            background: '#fff',
+            color: '#1c231f',
             cursor: 'pointer',
-            fontWeight: 500,
+            fontWeight: 600,
             fontSize: '14px',
             textAlign: 'left',
-            transition: 'background 0.2s',
+            boxShadow: '0 6px 14px rgba(33, 81, 34, 0.08)',
         },
 
   title: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     margin: '6px 0 16px',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   grid: {
@@ -332,29 +339,31 @@ const styles = {
     marginTop: '12px',
   },
   tile: {
-    border: '1px solid #e5e7eb',
-    borderRadius: '12px',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '14px',
     padding: '12px',
-    background: '#f9fafb',
+    background: '#ffffff',
+    boxShadow: '0 8px 18px rgba(33, 81, 34, 0.08)',
   },
   tileLabel: {
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.6)',
     fontSize: '13px',
     marginBottom: '6px',
   },
   tileValue: {
     fontWeight: 700,
     fontSize: '18px',
-    color: '#111827',
+    color: '#1c231f',
+    fontFamily: "'Fraunces', serif",
   },
 
   recentCard: {
   marginTop: '24px',
-  background: '#fff',
-  border: '1px solid #e5e7eb',
-  borderRadius: '14px',
+  background: '#ffffff',
+  border: '1px solid rgba(33, 81, 34, 0.12)',
+  borderRadius: '16px',
   padding: '20px',
-  boxShadow: '0 5px 15px rgba(0,0,0,0.04)',
+  boxShadow: '0 10px 24px rgba(33, 81, 34, 0.08)',
 },
 
 table: {
@@ -374,16 +383,17 @@ statusBadge: {
 },
 
 placeholder: {
-  color: '#9ca3af',
+  color: 'rgba(33, 81, 34, 0.6)',
   fontStyle: 'italic',
 },
 
 th: {
   textAlign: 'left',
   padding: '12px 10px',
-  color: '#6b7280',
+  color: 'rgba(33, 81, 34, 0.7)',
   fontWeight: 600,
   fontSize: '13px',
+  fontFamily: "'Fraunces', serif",
 },
 
 td: {
@@ -392,6 +402,7 @@ td: {
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  borderBottom: '1px solid rgba(33, 81, 34, 0.12)',
 },
 
 };

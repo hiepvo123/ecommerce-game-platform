@@ -43,9 +43,20 @@ const UsersManagement = () => {
     return roleColors[role] || '#6b7280';
   };
 
+  const formatDateOnly = (value) => {
+    if (!value) return ' _ ';
+    const raw = String(value);
+    if (raw.includes('T')) return raw.split('T')[0];
+    if (raw.includes(' ')) return raw.split(' ')[0];
+    return raw.slice(0, 10);
+  };
+
   return (
     <>
       <Navbar />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+      `}</style>
       <main style={styles.page}>
         <div style={styles.card}>
           <div style={styles.header}>
@@ -74,15 +85,15 @@ const UsersManagement = () => {
                     <th style={styles.th}>Username</th>
                     <th style={styles.th}>Role</th>
                     <th style={styles.th}>Verified</th>
-                    <th style={styles.th}>Country</th>
+                    <th style={{ ...styles.th, ...styles.thCenter }}>Date of Birth</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
                     <tr key={user.id}>
                       <td style={styles.td}>#{user.id}</td>
-                      <td style={styles.td}>{user.email || '—'}</td>
-                      <td style={styles.td}>{user.username || '—'}</td>
+                      <td style={styles.td}>{user.email || ' _ '}</td>
+                      <td style={styles.td}>{user.username || ' _ '}</td>
                       <td style={styles.td}>
                         <span
                           style={{
@@ -103,7 +114,24 @@ const UsersManagement = () => {
                           {user.is_verified ? 'Yes' : 'No'}
                         </span>
                       </td>
-                      <td style={styles.td}>{user.country || '—'}</td>
+                      <td style={styles.td}>
+                        {(() => {
+                          const dobValue = formatDateOnly(
+                            user.date_of_birth || user.dob || user.birth_date
+                          );
+                          const isEmpty = dobValue === ' _ ';
+                          return (
+                            <span
+                              style={{
+                                ...styles.dateCell,
+                                ...(isEmpty ? styles.emptyCell : {}),
+                              }}
+                            >
+                              {dobValue}
+                            </span>
+                          );
+                        })()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -119,16 +147,17 @@ const UsersManagement = () => {
 const styles = {
   page: {
     minHeight: '100vh',
-    background: '#f8f9fb',
+    background:
+      'radial-gradient(circle at 12% 8%, rgba(201, 204, 187, 0.45), transparent 55%), radial-gradient(circle at 86% 4%, rgba(116, 135, 114, 0.25), transparent 45%), linear-gradient(160deg, #f7f5ee 0%, #eceee2 48%, #f7f4ef 100%)',
     padding: '24px',
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Manrope', sans-serif",
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '14px',
+    background: '#ffffff',
+    border: '1px solid rgba(33, 81, 34, 0.12)',
+    borderRadius: '18px',
     padding: '20px',
-    boxShadow: '0 15px 40px rgba(0,0,0,0.06)',
+    boxShadow: '0 18px 40px rgba(33, 81, 34, 0.12)',
   },
   header: {
     display: 'flex',
@@ -138,25 +167,26 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: 700,
-    color: '#111827',
+    color: '#215122',
+    fontFamily: "'Fraunces', serif",
   },
   subtitle: {
     margin: '6px 0 0',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
     fontSize: '14px',
   },
   backButton: {
     padding: '10px 20px',
-    borderRadius: '8px',
-    border: '1px solid #d1d5db',
-    background: '#f9fafb',
-    color: '#111827',
+    borderRadius: '999px',
+    border: '1px solid rgba(33, 81, 34, 0.25)',
+    background: '#fff',
+    color: '#215122',
     cursor: 'pointer',
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: '14px',
-    transition: 'background 0.2s',
+    boxShadow: '0 8px 16px rgba(33, 81, 34, 0.12)',
   },
   tableContainer: {
     overflowX: 'auto',
@@ -168,20 +198,24 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    borderBottom: '2px solid #e5e7eb',
-    fontWeight: 600,
-    color: '#111827',
+    borderBottom: '1px dashed rgba(33, 81, 34, 0.25)',
+    fontWeight: 700,
+    color: '#215122',
     fontSize: '14px',
+    fontFamily: "'Fraunces', serif",
+  },
+  thCenter: {
+    textAlign: 'center',
   },
   td: {
     padding: '12px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid rgba(33, 81, 34, 0.12)',
     fontSize: '14px',
-    color: '#374151',
+    color: '#324035',
   },
   roleBadge: {
     padding: '4px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
     color: '#fff',
@@ -189,22 +223,30 @@ const styles = {
   },
   verifiedBadge: {
     padding: '4px 12px',
-    borderRadius: '6px',
+    borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 600,
     color: '#fff',
   },
+  dateCell: {
+    display: 'block',
+    textAlign: 'center',
+  },
+  emptyCell: {
+    color: 'rgba(33, 81, 34, 0.5)',
+  },
   message: {
     padding: '20px',
     textAlign: 'center',
-    color: '#6b7280',
+    color: 'rgba(33, 81, 34, 0.7)',
   },
   error: {
     padding: '20px',
     textAlign: 'center',
-    color: '#ef4444',
-    background: '#fef2f2',
-    borderRadius: '8px',
+    color: '#8b1d22',
+    background: 'rgba(224, 46, 53, 0.12)',
+    borderRadius: '12px',
+    border: '1px solid rgba(224, 46, 53, 0.3)',
   },
 };
 
