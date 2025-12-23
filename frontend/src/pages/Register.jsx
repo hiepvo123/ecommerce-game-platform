@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
 import { referenceService } from '../services/referenceService';
+import { useAuth } from '../context/AuthContext';
 
 const MultiSelect = ({ label, options = [], selected = [], onChange, placeholder = 'Select...' }) => {
   const [open, setOpen] = useState(false);
@@ -82,6 +83,7 @@ const MultiSelect = ({ label, options = [], selected = [], onChange, placeholder
 
 const Register = () => {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -150,8 +152,8 @@ const Register = () => {
       });
       setInfo(res?.message || 'Email verified!');
 
-      // auto-login after verify
-      await authService.login({
+      // auto-login after verify (use AuthContext so global state updates immediately)
+      await authLogin({
         identifier: registeredEmail,
         password: formData.password,
       });
@@ -413,7 +415,7 @@ const Register = () => {
               <button
                 type="button"
                 style={{ ...styles.button, ...styles.secondary }}
-                onClick={() => setShowPref(false)}
+                onClick={() => { setShowPref(false); navigate('/'); }}
                 disabled={prefLoading}
               >
                 Skip
