@@ -1,7 +1,14 @@
 
-# Game Shop (E-commerce-PTPL)
+# Ecommerce Game Platform (Personal Extension)
 
-This repository is a small full-stack e-commerce application for selling games. It contains a Node.js + Express backend (with PostgreSQL) and a React frontend. The README below explains how the project is structured, how to run it locally on Windows (PowerShell), and important API/session/database configuration notes.
+⚠️ Project Origin  
+This project is forked from the academic group project:
+KhoiDang1209 / E-commerce-PTPL. This repository is a small full-stack e-commerce application for selling games. It contains a Node.js + Express backend (with PostgreSQL) and a React frontend. The README below explains how the project is structured, how to run it locally on Windows (PowerShell), and important API/session/database configuration notes.
+
+The original project was completed as part of a university course.
+This repository represents independent development, refactoring,
+and feature expansion by the author after course completion.
+
 
 ## Contents
 
